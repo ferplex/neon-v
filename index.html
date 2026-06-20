@@ -1,0 +1,2553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON VAULT | Juegos & Galería Cyberpunk</title>
+    <style>
+        :root {
+            --bg: #050508;
+            --surface: rgba(18, 18, 26, 0.7);
+            --primary: #00f3ff;
+            --secondary: #b026ff;
+            --text: #e6e6f0;
+            --muted: #8888a0;
+            --success: #00ff9d;
+            --gold: #ffd700;
+            --danger: #ff4444;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .bg-animation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: 
+                linear-gradient(rgba(5, 5, 8, 0.9), rgba(5, 5, 8, 0.95)),
+                repeating-linear-gradient(0deg, transparent 0, transparent 1px, rgba(0, 243, 255, 0.03) 1px, rgba(0, 243, 255, 0.03) 2px),
+                repeating-linear-gradient(90deg, transparent 0, transparent 1px, rgba(176, 38, 255, 0.03) 1px, rgba(176, 38, 255, 0.03) 2px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            animation: gridMove 20s linear infinite;
+        }
+        
+        .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.3; z-index: -1; }
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation: float 8s ease-in-out infinite; }
+        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation: float 10s ease-in-out infinite reverse; }
+
+        @keyframes gridMove { 0% { background-position: 0 0, 0 0, 0 0; } 100% { background-position: 0 0, 0 40px, 40px 0; } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
+
+        .glass { background: var(--surface); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+        a { color: var(--primary); text-decoration: none; transition: 0.3s; }
+        a:hover { color: var(--secondary); text-shadow: 0 0 8px var(--secondary); }
+
+        header { position: sticky; top: 0; z-index: 50; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(5, 5, 8, 0.95); backdrop-filter: blur(8px); }
+        nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.8rem; font-weight: 900; letter-spacing: -1px; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        
+        .header-right { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+        .header-stats { display: flex; gap: 0.8rem; align-items: center; }
+        .stat-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(0, 243, 255, 0.1); border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 8px; font-weight: 600; font-size: 0.9rem; }
+        .stat-item.xp { border-color: rgba(255, 215, 0, 0.2); background: rgba(255, 215, 0, 0.1); }
+        .stat-item.level { border-color: rgba(176, 38, 255, 0.2); background: rgba(176, 38, 255, 0.1); color: var(--secondary); }
+
+        .kofi-container { display: flex; align-items: center; transition: transform 0.3s; }
+        .kofi-container:hover { transform: scale(1.05); }
+
+        .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 0.9rem; }
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-primary:hover { box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); transform: translateY(-2px); }
+        .btn-secondary { background: var(--secondary); color: #fff; }
+        .btn-secondary:hover { box-shadow: 0 0 20px rgba(176, 38, 255, 0.4); }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+
+        .hero { text-align: center; padding: 3rem 0 2rem; }
+        .hero h1 { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; margin-bottom: 0.5rem; line-height: 1.1; }
+        .hero p { color: var(--muted); max-width: 600px; margin: 0 auto 1.5rem; font-size: 1rem; }
+
+        /* ARCADE GRID */
+        .arcade-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin: 3rem 0; }
+        .game-card { padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); position: relative; transition: all 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, rgba(0,243,255,0.05), rgba(176,38,255,0.05)); }
+        .game-card:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 0 20px rgba(0, 243, 255, 0.2); }
+        
+        .game-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem; }
+        .game-icon { font-size: 2.5rem; }
+        .game-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.3rem; }
+        .game-genre { color: var(--primary); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .game-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem; flex-grow: 1; }
+        
+        .game-reward { display: flex; align-items: center; gap: 0.5rem; color: var(--success); font-weight: 700; margin-bottom: 1rem; }
+        .game-canvas { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 8px; margin: 1rem 0; display: none; }
+        
+        .game-controls { display: flex; gap: 0.8rem; margin-top: 1rem; }
+        .game-controls button { flex: 1; }
+
+        .game-screen { position: relative; background: #000; border: 2px solid var(--primary); border-radius: 8px; overflow: hidden; margin-bottom: 1rem; }
+        .game-score { position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.7); padding: 0.4rem 0.8rem; border-radius: 4px; font-weight: 700; color: var(--success); z-index: 10; font-size: 0.9rem; }
+        .game-message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.9); padding: 1.5rem; border-radius: 8px; border: 2px solid var(--primary); text-align: center; z-index: 20; display: none; }
+        .game-message.show { display: block; }
+        .game-message h3 { color: var(--primary); margin-bottom: 0.5rem; font-size: 1.5rem; }
+        .game-message p { color: var(--text); margin-bottom: 0.5rem; }
+
+        /* POSTERS GALERIA */
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+        .poster-card { border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; background: #0c0c14; transition: 0.3s; }
+        .poster-card:hover { border-color: var(--secondary); box-shadow: 0 0 15px rgba(176, 38, 255, 0.3); }
+        .poster-thumb { width: 100%; height: 350px; background-size: cover; background-position: center; display: flex; align-items: flex-end; }
+        .poster-info { background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 1.5rem 1rem 1rem; width: 100%; }
+        .poster-title { font-weight: 800; font-size: 1.1rem; color: #fff; }
+        .poster-tag { font-size: 0.75rem; color: var(--secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+
+        /* TAP GAME */
+        .tap-zone { width: 100%; height: 280px; background: linear-gradient(135deg, rgba(0, 243, 255, 0.1), rgba(176, 38, 255, 0.1)); border: 2px dashed var(--primary); border-radius: 8px; position: relative; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .tap-zone.active { border-color: var(--success); box-shadow: 0 0 20px rgba(0, 255, 157, 0.5); }
+
+        /* MEMORY GAME */
+        .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1rem; }
+        .memory-card { aspect-ratio: 1; background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 2rem; transition: all 0.2s; user-select: none; }
+        .memory-card.flipped { background: #000; color: var(--text); border: 2px solid var(--primary); }
+        .memory-card.matched { background: linear-gradient(135deg, var(--success), rgba(0, 255, 157, 0.5)); }
+
+        /* CANVASES */
+        #obstacleCanvas, #spaceCanvas { width: 100%; display: block; background: #000; }
+
+        /* TRIVIA */
+        .trivia-question { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--primary); }
+        .trivia-options { display: grid; gap: 0.8rem; margin-bottom: 1.5rem; }
+        .trivia-btn { padding: 0.8rem 1rem; background: rgba(0, 243, 255, 0.1); border: 1px solid rgba(0, 243, 255, 0.3); color: var(--text); border-radius: 8px; cursor: pointer; transition: all 0.3s; text-align: left; }
+        .trivia-btn:hover { background: rgba(0, 243, 255, 0.2); border-color: var(--primary); }
+        .trivia-btn.correct { background: var(--success); color: #000; }
+        .trivia-btn.incorrect { background: var(--danger); color: #fff; }
+
+        .section-title { margin: 3rem 0 1.5rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 1.8rem; font-weight: 800; }
+        footer { border-top: 1px solid rgba(255,255,255,0.1); padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 3rem; }
+
+        .leaderboard { margin-top: 1rem; }
+        .lb-item { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+        .lb-rank { color: var(--gold); font-weight: 700; width: 30px; }
+        .lb-score { color: var(--success); font-weight: 600; }
+
+        .sound-toggle { position: fixed; bottom: 2rem; right: 2rem; width: 55px; height: 55px; border-radius: 50%; background: var(--primary); border: 2px solid rgba(255,255,255,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; transition: all 0.3s; z-index: 100; box-shadow: 0 0 25px rgba(0, 243, 255, 0.5); }
+        .sound-toggle.muted { background: rgba(136, 136, 160, 0.3); border-color: rgba(136, 136, 160, 0.5); box-shadow: 0 0 15px rgba(136, 136, 160, 0.3); }
+
+        @media (max-width: 768px) {
+            nav { flex-direction: column; align-items: center; text-align: center; }
+            .header-right { flex-direction: column; gap: 0.8rem; }
+        }
+    </style>
+
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+
+    <header class="glass">
+        <nav class="container">
+            <div class="logo">◆ NEON VAULT ◆</div>
+            <div class="header-right">
+                <!-- TU BOTÓN DE KO-FI -->
+                <div class="kofi-container">
+                    <a href='https://ko-fi.com/R5R0HBMN2' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-item">💎 VC: <span id="vcCount">0</span></div>
+                    <div class="stat-item xp">⚡ XP: <span id="xpCount">0</span></div>
+                    <div class="stat-item level">🎯 Lv. <span id="levelCount">1</span></div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    </main><h2 class="section-title">📡 TERMINAL DE ENLACES EXTERNOS</h2>
+        <p style="color: var(--muted); margin-bottom: 2rem;">Conéctate a la red exterior. Explora contenido aliado, streams, música y laboratorios de IA.</p>
+
+        <div class="gallery-grid">
+            <div class="poster-card glass">
+                <div class="poster-thumb" style="background: linear-gradient(to bottom, rgba(5,5,8,0.2), #0c0c14), url('https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=500&auto=format&fit=crop&q=60') center/cover;">
+                    <div class="poster-info">
+                        <span class="poster-tag">SOFTWARE IA</span>
+                        <h3 class="poster-title"><a href="https://ferplex.github.io/mangaai-pro/" target="_blank">MangaAI Pro 🤖</a></h3>
+                        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem;">Generación y traducción inteligente de manga impulsada por inteligencia artificial.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="poster-card glass">
+                <div class="poster-thumb" style="background: linear-gradient(to bottom, rgba(5,5,8,0.2), #0c0c14), url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=60') center/cover;">
+                    <div class="poster-info">
+                        <span class="poster-tag">MÚSICA & BEATS</span>
+                        <h3 class="poster-title"><a href="https://www.youtube.com/@mtmusictube" target="_blank">El Canal del Beat 🎧</a></h3>
+                        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem;">Canal oficial de YouTube @mtmusictube. Ritmos, loops y producciones urbanas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="poster-card glass">
+                <div class="poster-thumb" style="background: linear-gradient(to bottom, rgba(5,5,8,0.2), #0c0c14), url('https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=500&auto=format&fit=crop&q=60') center/cover;">
+                    <div class="poster-info">
+                        <span class="poster-tag">YOUTUBE ALLY</span>
+                        <h3 class="poster-title"><a href="https://www.youtube.com/@Moon-cheselab" target="_blank">Moon-cheselab 🧪</a></h3>
+                        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem;">Experimentos, reviews de tecnología y contenido geek en YouTube.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="poster-card glass">
+                <div class="poster-thumb" style="background: linear-gradient(to bottom, rgba(5,5,8,0.2), #0c0c14), url('https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=60') center/cover;">
+                    <div class="poster-info">
+                        <span class="poster-tag">ANIME COMMUNITY</span>
+                        <h3 class="poster-title"><a href="https://www.youtube.com/@ciberkatananime" target="_blank">CiberKatanAnime ⚔️</a></h3>
+                        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem;">Análisis de anime, cultura cyberpunk, katanas y cultura otaku.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="poster-card glass">
+                <div class="poster-thumb" style="background: linear-gradient(to bottom, rgba(5,5,8,0.2), #0c0c14), url('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=500&auto=format&fit=crop&q=60') center/cover;">
+                    <div class="poster-info">
+                        <span class="poster-tag">SPORTS & MEDIA</span>
+                        <h3 class="poster-title"><a href="https://www.youtube.com/@Deportetubemx" target="_blank">Deportetubemx ⚽</a></h3>
+                        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem;">Toda la pasión de los deportes, resúmenes y coberturas multimedia en YouTube.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="poster-card glass">
+                <div class="poster-thumb" style="background: linear-gradient(to bottom, rgba(5,5,8,0.2), #0c0c14), url('https://images.unsplash.com/photo-1614680376593-902f74fa0d41?w=500&auto=format&fit=crop&q=60') center/cover;">
+                    <div class="poster-info">
+                        <span class="poster-tag">SOUNDCLOUD</span>
+                        <h3 class="poster-title"><a href="https://soundcloud.com/luisdrems" target="_blank">Luisdrems (Audio) 🎵</a></h3>
+                        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem;">Tracks originales, remixes y sets de audio envolvente listos para retransmitir.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="poster-card glass">
+                <div class="poster-thumb" style="background: linear-gradient(to bottom, rgba(5,5,8,0.2), #0c0c14), url('https://images.unsplash.com/photo-1542751371-adc38448a05e?w=500&auto=format&fit=crop&q=60') center/cover;">
+                    <div class="poster-info">
+                        <span class="poster-tag">TIKTOK VIRAL</span>
+                        <h3 class="poster-title"><a href="https://www.tiktok.com/@nautiluslabarch/video/7651878038300298513" target="_blank">Nautilus Lab Arch 🪐</a></h3>
+                        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem;">Video destacado de arquitectura digital, simulaciones y arte de vanguardia.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="fmAlmanaqueBot" class="glass" style="position: fixed; bottom: 2rem; left: 2rem; width: 300px; border-radius: 12px; z-index: 100; border: 1px solid var(--secondary); box-shadow: 0 0 15px rgba(176, 38, 255, 0.2); overflow: hidden; font-family: sans-serif;">
+            <div style="background: linear-gradient(90deg, var(--secondary), var(--bg)); padding: 0.6rem 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 800; font-size: 0.85rem; letter-spacing: 1px; color: #fff;">📟 FM ALMANAQUE v1.0</span>
+                <span style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success);"></span>
+            </div>
+            <div style="padding: 0.8rem; background: rgba(5,5,8,0.95);">
+                <p id="botDialogue" style="font-size: 0.8rem; color: var(--text); line-height: 1.4; min-height: 40px; margin-bottom: 0.6rem;">
+                    "¡Ey, operador! Estoy interconectando <strong>Neon Vault</strong> y <strong>MangaAI Pro</strong>. ¿Qué enlace quieres verificar?"
+                </p>
+                <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary btn-sm" style="font-size:0.7rem; padding: 0.3rem 0.6rem;" onclick="triggerBotMsg('manga')">MangaAI</button>
+                    <button class="btn btn-secondary btn-sm" style="font-size:0.7rem; padding: 0.3rem 0.6rem;" onclick="triggerBotMsg('neon')">Neon-V</button>
+                    <button class="btn btn-outline btn-sm" style="font-size:0.7rem; padding: 0.3rem 0.6rem; border-color: var(--success); color: var(--success);" onclick="triggerBotMsg('musica')">Música</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function triggerBotMsg(type) {
+                const diag = document.getElementById('botDialogue');
+                if (type === 'manga') {
+                    diag.innerHTML = '"Accediendo a <strong>MangaAI Pro</strong>... El cuartel central de la IA para Traductores y Creadores de Manga."';
+                } else if (type === 'neon') {
+                    diag.innerHTML = '"Redirigiendo datos a la matriz principal en <a href=\'https://ferplex.github.io/neon-v/\' target=\'_blank\'>neon-v</a>... Enlace operativo de doble vía sin errores."';
+                } else if (type === 'musica') {
+                    diag.innerHTML = '"Sincronizando frecuencias con El Canal del Beat y SoundCloud de Luisdrems. Elige un canal arriba y sube el volumen."';
+                }
+            }
+        </script>
+        <section class="hero">
+            <h1>ARCADE NEON</h1>
+            <p>Juega, gana VC y domina la tabla de clasificación. Cada partida te acerca a nuevos niveles.</p>
+        </section>
+
+        <section class="arcade-grid" id="gameGrid">
+            <!-- JUEGO 1: TAP RUSH -->
+            <div class="game-card glass">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">TAP RUSH</div>
+                        <div class="game-genre">• Reflexos • Velocidad</div>
+                    </div>
+                    <div class="game-icon">👊</div>
+                </div>
+                <div class="game-desc">¡Clickea lo más rápido posible! Cuantos más toques en 10 segundos, más VC ganas.</div>
+                <div class="game-reward">💰 +10 VC por 5 taps</div>
+                <div class="game-screen">
+                    <div class="game-score">Score: <span id="tapScore">0</span></div>
+                    <div class="tap-zone" id="tapZone"><span id="tapInstructions" style="color: var(--muted); font-size: 0.9rem;">TAP PARA COMENZAR</span></div>
+                    <div class="game-message" id="tapMessage"><h3 id="tapResult"></h3><p id="tapReward"></p></div>
+                </div>
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="startTapGame()">Jugar</button>
+                    <button class="btn btn-outline btn-sm" id="tapRestart" onclick="resetTapGame()" style="display:none;">Reintentar</button>
+                </div>
+            </div>
+
+            <!-- JUEGO 2: MEMORY MATCH -->
+            <div class="game-card glass">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">MEMORY MATCH</div>
+                        <div class="game-genre">• Memoria • Concentración</div>
+                    </div>
+                    <div class="game-icon">🧠</div>
+                </div>
+                <div class="game-desc">Encuentra todos los pares de emojis. Menos movimientos = más VC.</div>
+                <div class="game-reward">💰 +30 VC si completas en menos de 25 movimientos</div>
+                <div class="game-screen">
+                    <div class="game-score">Movimientos: <span id="memoryMoves">0</span></div>
+                    <div class="memory-grid" id="memoryGrid"></div>
+                    <div class="game-message" id="memoryMessage"><h3 id="memoryResult"></h3><p id="memoryReward"></p></div>
+                </div>
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="startMemoryGame()">Jugar</button>
+                    <button class="btn btn-outline btn-sm" id="memoryRestart" onclick="resetMemoryGame()" style="display:none;">Reintentar</button>
+                </div>
+            </div>
+
+            <!-- JUEGO 3: OBSTACLE RUNNER -->
+            <div class="game-card glass">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">NEON RUNNER</div>
+                        <div class="game-genre">• Acción • Reflejos</div>
+                    </div>
+                    <div class="game-icon">🎮</div>
+                </div>
+                <div class="game-desc">Esquiva obstáculos moviéndote con las flechas o WASD. Sobrevive lo máximo.</div>
+                <div class="game-reward">💰 +5 VC por cada segundo de supervivencia</div>
+                <div class="game-screen">
+                    <div class="game-score">Tiempo: <span id="obstacleTime">0</span>s</div>
+                    <canvas id="obstacleCanvas" width="400" height="300"></canvas>
+                    <div class="game-message" id="obstacleMessage"><h3 id="obstacleResult"></h3><p id="obstacleReward"></p></div>
+                </div>
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="startObstacleGame()">Jugar</button>
+                    <button class="btn btn-outline btn-sm" id="obstacleRestart" onclick="resetObstacleGame()" style="display:none;">Reintentar</button>
+                </div>
+            </div>
+
+            <!-- JUEGO 4: SPACE SHOOTERS -->
+            <div class="game-card glass">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">SPACE SHOOTERS</div>
+                        <div class="game-genre">• Arcade • Action</div>
+                    </div>
+                    <div class="game-icon">🚀</div>
+                </div>
+                <div class="game-desc">Pilota tu nave y destruye enemigos. Esquiva sus disparos. Sobrevive lo máximo.</div>
+                <div class="game-reward">💰 +15 VC por enemigo destruido</div>
+                <div class="game-screen">
+                    <div class="game-score">Enemigos: <span id="spaceKills">0</span> | Vidas: <span id="spaceHealth">3</span></div>
+                    <canvas id="spaceCanvas" width="400" height="320"></canvas>
+                    <div class="game-message" id="spaceMessage"><h3 id="spaceResult"></h3><p id="spaceReward"></p></div>
+                </div>
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="startSpaceGame()">Jugar</button>
+                    <button class="btn btn-outline btn-sm" id="spaceRestart" onclick="resetSpaceGame()" style="display:none;">Reintentar</button>
+                </div>
+            </div>
+
+            <!-- JUEGO 5: RETRO TRIVIA -->
+            <div class="game-card glass">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">RETRO TRIVIA</div>
+                        <div class="game-genre">• Conocimiento • Gaming</div>
+                    </div>
+                    <div class="game-icon">🕹️</div>
+                </div>
+                <div class="game-desc">Responde preguntas sobre videojuegos clásicos. 3 preguntas por partida.</div>
+                <div class="game-reward">💰 +20 VC por respuesta correcta</div>
+                <div class="game-screen">
+                    <div class="game-score">Correctas: <span id="triviaCorrect">0</span>/3</div>
+                    <div id="triviaContainer" style="display:none;">
+                        <div class="trivia-question" id="triviaQuestion"></div>
+                        <div class="trivia-options" id="triviaOptions"></div>
+                    </div>
+                    <div id="triviaStart" style="text-align:center; padding:2rem 0;"><p style="color:var(--muted)">¿Listo para el desafío retro?</p></div>
+                    <div class="game-message" id="triviaMessage"><h3 id="triviaResult"></h3><p id="triviaReward"></p></div>
+                </div>
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="startTriviaGame()">Jugar</button>
+                    <button class="btn btn-outline btn-sm" id="triviaRestart" onclick="resetTriviaGame()" style="display:none;">Otro Intento</button>
+                </div>
+            </div>
+
+            <!-- NUEVO JUEGO 6: NEON PINBALL -->
+            <div class="game-card glass">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">NEON PINBALL: MILLENNIUM EDITION</div>
+                        <div class="game-genre">• Arcade • Galáctico</div>
+                    </div>
+                    <div class="game-icon">🚀</div>
+                </div>
+                <div class="game-desc">¡Física corregida! Entra al tobogán arcoíris para dar la vuelta completa, activar el botón de salida y encender el Halcón Milenario con melodía de 8-bits.</div>
+                <div class="game-reward">💰 +20 VC por cada 1000 puntos</div>
+                <div class="game-screen">
+                    <div class="game-score">Puntos: <span id="pinballScore">0</span> | <span id="falconStatus" style="color: #8888a0;">HALCÓN: APAGADO</span></div>
+                    <canvas id="pinballCanvas" width="320" height="380" style="width: 100%; display: block; background: #020205; border: 2px solid var(--primary); border-radius: 8px;"></canvas>
+                    <div class="game-message" id="pinballMessage">
+                        <h3 id="pinballResult">¡GAME OVER!</h3>
+                        <p id="pinballReward"></p>
+                    </div>
+                </div>
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="startPinballGame()">Jugar</button>
+                    <button class="btn btn-outline btn-sm" id="pinballRestart" onclick="resetPinballGame()" style="display:none;">Reintentar</button>
+                </div>
+            </div>
+            <script>
+                // ==================== NEON PINBALL: RE-ENGINEERED V2.7 (CALIBRACIÓN SUAVE) ====================
+                const pCanvas = document.getElementById('pinballCanvas');
+                const pCtx = pCanvas.getContext('2d');
+
+                let pState = {
+                    running: false,
+                    score: 0,
+                    ball: { x: 160, y: 40, vx: 0.8, vy: 0, radius: 9 },
+                    gravity: 0.09, // Gravedad reducida (Nivel Chido/Disfrutable)
+                    leftFlipper: { x: 90, y: 340, length: 55, angle: 0.3, activeAngle: -0.4, currentAngle: 0.3, isLeft: true },
+                    rightFlipper: { x: 230, y: 340, length: 55, angle: -0.3, activeAngle: 0.4, currentAngle: -0.3, isLeft: false },
+                    bumpers: [
+                        { x: 70, y: 180, radius: 18, color: '#00f3ff', points: 100 },
+                        { x: 250, y: 180, radius: 18, color: '#b026ff', points: 100 }
+                    ],
+                    falcon: { x: 160, y: 240, radius: 32, active: false, timer: 0 },
+                    slide: { centerX: 160, centerY: 100, radius: 100, width: 14, inProgress: false, angle: Math.PI },
+                    rainbowSwitch: { x: 245, y: 120, width: 15, height: 8, pressed: false }
+                };
+
+                function playStarWarsIntro() {
+                    if (typeof soundEnabled !== 'undefined' && !soundEnabled) return;
+                    let ctxAudio = window.audioContext || (window.AudioContext ? new AudioContext() : null);
+                    if (!ctxAudio) return;
+
+                    const now = ctxAudio.currentTime;
+                    const melody = [
+                        { f: 440, d: 0.3, t: 0.0 }, { f: 440, d: 0.3, t: 0.4 }, { f: 440, d: 0.3, t: 0.8 },
+                        { f: 349, d: 0.2, t: 1.2 }, { f: 523, d: 0.1, t: 1.4 }, { f: 440, d: 0.4, t: 1.6 },
+                        { f: 349, d: 0.2, t: 2.1 }, { f: 523, d: 0.1, t: 2.3 }, { f: 440, d: 0.6, t: 2.5 }
+                    ];
+
+                    melody.forEach(note => {
+                        try {
+                            const osc = ctxAudio.createOscillator();
+                            const gain = ctxAudio.createGain();
+                            osc.type = 'square';
+                            osc.frequency.setValueAtTime(note.f, now + note.t);
+                            gain.gain.setValueAtTime(0.08, now + note.t);
+                            gain.gain.exponentialRampToValueAtTime(0.01, now + note.t + note.d);
+                            osc.connect(gain);
+                            gain.connect(ctxAudio.destination);
+                            osc.start(now + note.t);
+                            osc.stop(now + note.t + note.d);
+                        } catch(e) {}
+                    });
+                }
+
+                function startPinballGame() {
+                    if(pState.running) return;
+                    pState.running = true;
+                    pState.score = 0;
+                    pState.ball = { x: 160, y: 45, vx: (Math.random() * 1.6) - 0.8, vy: 0.5, radius: 9 };
+                    pState.falcon.active = false;
+                    pState.slide.inProgress = false;
+                    pState.rainbowSwitch.pressed = false;
+
+                    document.getElementById('pinballScore').textContent = '0';
+                    document.getElementById('falconStatus').textContent = 'HALCÓN: APAGADO';
+                    document.getElementById('falconStatus').style.color = '#8888a0';
+                    document.getElementById('pinballMessage').classList.remove('show');
+                    document.getElementById('pinballRestart').style.display = 'none';
+
+                    if (typeof initAudio === "function") initAudio();
+                    pLoop();
+                }
+
+                function pLoop() {
+                    if (!pState.running) return;
+
+                    pCtx.fillStyle = '#030308';
+                    pCtx.fillRect(0, 0, pCanvas.width, pCanvas.height);
+
+                    // 1. DIBUJAR TOBOGÁN ARCOÍRIS
+                    let rainbowColors = ['#ff0055', '#ff9900', '#ffeb3b', '#00ff9d', '#00f3ff', '#b026ff'];
+                    rainbowColors.forEach((color, i) => {
+                        pCtx.strokeStyle = color;
+                        pCtx.lineWidth = 3;
+                        pCtx.beginPath();
+                        pCtx.arc(pState.slide.centerX, pState.slide.centerY, pState.slide.radius - (i * 3), Math.PI, 0);
+                        pCtx.stroke();
+                    });
+
+                    // 2. BOTÓN DE SALIDA
+                    pCtx.fillStyle = pState.rainbowSwitch.pressed ? '#00ff9d' : '#ff4444';
+                    pCtx.fillRect(pState.rainbowSwitch.x, pState.rainbowSwitch.y, pState.rainbowSwitch.width, pState.rainbowSwitch.height);
+
+                    // 3. FÍSICA Y CINEMÁTICA AMORTIGUADA
+                    if (!pState.slide.inProgress) {
+                        let distToInlet = Math.sqrt(Math.pow(pState.ball.x - 60, 2) + Math.pow(pState.ball.y - 100, 2));
+                        if (distToInlet < 22 && pState.ball.vy < 0.8) {
+                            pState.slide.inProgress = true;
+                            pState.slide.angle = Math.PI;
+                        }
+
+                        pState.ball.vy += pState.gravity;
+                        pState.ball.x += pState.ball.vx;
+                        pState.ball.y += pState.ball.vy;
+                    } else {
+                        // El tobogán mantiene su velocidad suave constante
+                        pState.slide.angle += 0.035;
+                        pState.ball.x = pState.slide.centerX + Math.cos(pState.slide.angle) * (pState.slide.radius - 8);
+                        pState.ball.y = pState.slide.centerY + Math.sin(pState.slide.angle) * (pState.slide.radius - 8);
+
+                        if (pState.slide.angle >= Math.PI * 2) {
+                            pState.slide.inProgress = false;
+                            pState.ball.vx = 1.2;
+                            pState.ball.vy = 0.8;
+
+                            if (!pState.rainbowSwitch.pressed) {
+                                pState.rainbowSwitch.pressed = true;
+                                pState.falcon.active = true;
+                                pState.falcon.timer = 500; // Más tiempo activo para disfrutarlo
+                                document.getElementById('falconStatus').textContent = '⚡ HALCÓN: ACTIVADO (X2) ⚡';
+                                document.getElementById('falconStatus').style.color = '#00f3ff';
+                                pState.score += 500;
+                                playStarWarsIntro();
+                            }
+                        }
+                    }
+
+                    if (pState.falcon.active) {
+                        pState.falcon.timer--;
+                        if (pState.falcon.timer <= 0) {
+                            pState.falcon.active = false;
+                            pState.rainbowSwitch.pressed = false;
+                            document.getElementById('falconStatus').textContent = 'HALCÓN: APAGADO';
+                            document.getElementById('falconStatus').style.color = '#8888a0';
+                        }
+                    }
+
+                    // Colisiones con paredes más suaves (absorbe energía para que no rebote loco)
+                    if (pState.ball.x - pState.ball.radius < 0) { pState.ball.x = pState.ball.radius; pState.ball.vx *= -0.5; }
+                    if (pState.ball.x + pState.ball.radius > pCanvas.width) { pState.ball.x = pCanvas.width - pState.ball.radius; pState.ball.vx *= -0.5; }
+                    if (pState.ball.y - pState.ball.radius < 0) { pState.ball.y = pState.ball.radius; pState.ball.vy *= -0.5; }
+
+                    // 4. RENDEREAR EL HALCÓN MILENARIO
+                    pCtx.save();
+                    pCtx.strokeStyle = pState.falcon.active ? '#00f3ff' : 'rgba(230, 230, 240, 0.4)';
+                    pCtx.lineWidth = 2;
+                    pCtx.beginPath();
+                    pCtx.arc(pState.falcon.x, pState.falcon.y, pState.falcon.radius, 0, Math.PI * 2);
+                    pCtx.stroke();
+
+                    pCtx.beginPath();
+                    pCtx.moveTo(pState.falcon.x - 10, pState.falcon.y - 20);
+                    pCtx.lineTo(pState.falcon.x - 10, pState.falcon.y - 45);
+                    pCtx.lineTo(pState.falcon.x + 10, pState.falcon.y - 45);
+                    pCtx.lineTo(pState.falcon.x + 10, pState.falcon.y - 20);
+                    pCtx.stroke();
+                    pCtx.restore();
+
+                    // Choque controlado con el Halcón
+                    let fdx = pState.ball.x - pState.falcon.x;
+                    let fdy = pState.ball.y - pState.falcon.y;
+                    let fDist = Math.sqrt(fdx * fdx + fdy * fdy);
+
+                    if (fDist < pState.falcon.radius + pState.ball.radius) {
+                        let fnx = fdx / fDist;
+                        let fny = fdy / fDist;
+                        pState.ball.x = pState.falcon.x + fnx * (pState.falcon.radius + pState.ball.radius);
+
+                        let boost = pState.falcon.active ? 4.5 : 3.2; // Rebote balanceado
+                        pState.ball.vx = fnx * boost;
+                        pState.ball.vy = fny * boost;
+
+                        pState.score += pState.falcon.active ? 400 : 200;
+                        document.getElementById('pinballScore').textContent = pState.score;
+                        if(typeof sounds !== 'undefined') sounds.explode();
+                    }
+
+                    // Ángulos de Flippers
+                    pState.leftFlipper.currentAngle = (keys['arrowleft'] || keys['a']) ? pState.leftFlipper.activeAngle : pState.leftFlipper.angle;
+                    pState.rightFlipper.currentAngle = (keys['arrowright'] || keys['d']) ? pState.rightFlipper.activeAngle : pState.rightFlipper.angle;
+
+                    // Bumpers circulares
+                    pState.bumpers.forEach(bumper => {
+                        pCtx.fillStyle = bumper.color;
+                        pCtx.beginPath();
+                        pCtx.arc(bumper.x, bumper.y, bumper.radius, 0, Math.PI * 2);
+                        pCtx.fill();
+
+                        let bdx = pState.ball.x - bumper.x;
+                        let bdy = pState.ball.y - bumper.y;
+                        let bDist = Math.sqrt(bdx * bdx + bdy * bdy);
+
+                        if (bDist < bumper.radius + pState.ball.radius) {
+                            let bnx = bdx / bDist;
+                            let bny = bdy / bDist;
+                            pState.ball.x = bumper.x + bnx * (bumper.radius + pState.ball.radius);
+                            pState.ball.vx = bnx * 3.6;
+                            pState.ball.vy = bny * 3.6;
+
+                            pState.score += pState.falcon.active ? (bumper.points * 2) : bumper.points;
+                            document.getElementById('pinballScore').textContent = pState.score;
+                            if(typeof sounds !== 'undefined') sounds.tap();
+                        }
+                    });
+
+                    // Dibujar bates
+                    drawFlipper(pState.leftFlipper);
+                    drawFlipper(pState.rightFlipper);
+                    checkFlipperCollision(pState.leftFlipper);
+                    checkFlipperCollision(pState.rightFlipper);
+
+                    // Renderizar Pelota de Luz
+                    pCtx.fillStyle = '#ffffff';
+                    pCtx.beginPath();
+                    pCtx.arc(pState.ball.x, pState.ball.y, pState.ball.radius, 0, Math.PI * 2);
+                    pCtx.fill();
+
+                    if (pState.ball.y > pCanvas.height) {
+                        endPinballGame();
+                        return;
+                    }
+
+                    requestAnimationFrame(pLoop);
+                }
+
+                function drawFlipper(f) {
+                    pCtx.save();
+                    pCtx.translate(f.x, f.y);
+                    pCtx.rotate(f.currentAngle);
+                    pCtx.strokeStyle = '#00ff9d';
+                    pCtx.lineWidth = 6;
+                    pCtx.lineCap = 'round';
+                    pCtx.beginPath();
+                    pCtx.moveTo(0, 0);
+                    pCtx.lineTo(f.isLeft ? f.length : -f.length, 0);
+                    pCtx.stroke();
+                    pCtx.restore();
+                }
+
+                function checkFlipperCollision(f) {
+                    let targetX = f.x + (f.isLeft ? f.length / 2 : -f.length / 2);
+                    let dx = pState.ball.x - targetX;
+                    let dy = pState.ball.y - f.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 38 && pState.ball.y > f.y - 18 && pState.ball.y < f.y + 18) {
+                        // El golpe te da el impulso ideal hacia arriba
+                        let force = (f.currentAngle === f.activeAngle) ? -4.5 : -3.2;
+                        pState.ball.vy = force;
+                        pState.ball.vx += f.isLeft ? 1.0 : -1.0;
+                        if(typeof sounds !== 'undefined') sounds.click();
+                    }
+                }
+
+                function endPinballGame() {
+                    pState.running = false;
+                    const finalReward = Math.floor(pState.score / 1000) * 20;
+                    document.getElementById('pinballReward').innerText = `Puntuación: ${pState.score} \n Recompensa: +${finalReward} VC`;
+                    document.getElementById('pinballMessage').classList.add('show');
+                    document.getElementById('pinballRestart').style.display = 'inline-block';
+                    if(typeof sounds !== 'undefined') sounds.gameOver();
+                    if(finalReward > 0 && typeof addReward === "function") addReward(finalReward);
+                }
+
+                function resetPinballGame() {
+                    document.getElementById('pinballMessage').classList.remove('show');
+                    document.getElementById('pinballRestart').style.display = 'none';
+                    startPinballGame();
+                }
+            </script>
+
+
+
+            <!-- ========================================== -->
+<!-- SECCIÓN COMPLETAMENTE RECONSTRUIDA DE SNAKE  -->
+<!-- ========================================== -->
+<div class="arcade-card" id="game-snake" style="margin-bottom: 30px;">
+    <div class="arcade-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00ffcc; padding-bottom: 10px; margin-bottom: 15px;">
+        <h3 style="color: #00ffcc; margin: 0; font-family: 'Courier New', Courier, monospace; text-shadow: 0 0 10px #00ffcc;">🕹️ NEON SNAKE</h3>
+        <span class="game-status" style="background: #00ffcc; color: #000; padding: 2px 8px; font-size: 0.8rem; font-weight: bold; border-radius: 3px;">FREE TO PLAY</span>
+    </div>
+
+    <div class="game-container" style="display: flex; gap: 20px; justify-content: center; align-items: center; flex-wrap: wrap;">
+        <!-- El Canvas del juego (Cuadrado clásico de 400x400) -->
+        <canvas id="snakeCanvas" width="400" height="400" style="background: #000; border: 2px solid #ff007f; box-shadow: 0 0 15px rgba(255, 0, 127, 0.6);"></canvas>
+
+        <!-- Sidebar de Estado y Puntuación -->
+        <div class="game-sidebar" style="display: flex; flex-direction: column; gap: 15px; min-width: 120px;">
+            <div class="score-box" style="background: #0d0d13; border: 1px solid #333; padding: 10px; text-align: center; border-radius: 4px;">
+                <p style="margin: 0; font-size: 0.8rem; color: #888;">SCORE</p>
+                <span id="snakeScore" style="font-size: 1.5rem; font-weight: bold; color: #00ffcc; font-family: monospace; text-shadow: 0 0 5px #00ffcc;">0000</span>
+            </div>
+            <div class="score-box" style="background: #0d0d13; border: 1px solid #333; padding: 10px; text-align: center; border-radius: 4px;">
+                <p style="margin: 0; font-size: 0.8rem; color: #888;">XP EARNED</p>
+                <span id="snakeXp" style="font-size: 1.2rem; font-weight: bold; color: #ffaa00; font-family: monospace;">0 XP</span>
+            </div>
+            <button class="neon-btn" id="startSnakeBtn" style="background: transparent; color: #00ffcc; border: 2px solid #00ffcc; padding: 10px; font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.3s; font-family: monospace;">START</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- LÓGICA DEL SNAKE (HTML5 CANVAS) ---
+(function() {
+    const canvas = document.getElementById('snakeCanvas');
+    const context = canvas.getContext('2d');
+    const scoreElement = document.getElementById('snakeScore');
+    const xpElement = document.getElementById('snakeXp');
+    const startBtn = document.getElementById('startSnakeBtn');
+
+    const gridSize = 20; // Tamaño de cada segmento/cuadrícula
+    const tileCount = canvas.width / gridSize;
+
+    let snake = [];
+    let food = { x: 5, y: 5 };
+    let dx = gridSize; // Velocidad inicial en X
+    let dy = 0;        // Velocidad inicial en Y
+    let score = 0;
+    let xp = 0;
+    let gameOver = true;
+    let gameInterval;
+    let speed = 100; // Milisegundos por frame (Controla la dificultad)
+
+    function initGame() {
+        snake = [
+            { x: 160, y: 200 },
+            { x: 140, y: 200 },
+            { x: 120, y: 200 }
+        ];
+        dx = gridSize;
+        dy = 0;
+        score = 0;
+        xp = 0;
+        updateScoreElements();
+        resetFood();
+    }
+
+    function resetFood() {
+        food.x = Math.floor(Math.random() * tileCount) * gridSize;
+        food.y = Math.floor(Math.random() * tileCount) * gridSize;
+
+        // Evitar que la comida aparezca encima de la víbora
+        snake.forEach(part => {
+            const hasEaten = part.x === food.x && part.y === food.y;
+            if (hasEaten) resetFood();
+        });
+    }
+
+    function mainLoop() {
+        if (hasGameEnded()) {
+            gameOver = true;
+            clearInterval(gameInterval);
+            startBtn.innerText = "RESTART";
+            alert("GAME OVER! Puntuación sincronizada en Neon Vault.");
+            return;
+        }
+
+        clearCanvas();
+        drawFood();
+        moveSnake();
+        drawSnake();
+    }
+
+    function clearCanvas() {
+        context.fillStyle = '#000';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawSnake() {
+        snake.forEach((part, index) => {
+            // La cabeza es verde neón brillante, el cuerpo tiene un degradado
+            context.fillStyle = index === 0 ? '#00ffcc' : '#00aa88';
+            context.strokeStyle = '#000';
+            context.fillRect(part.x, part.y, gridSize, gridSize);
+            context.strokeRect(part.x, part.y, gridSize, gridSize);
+        });
+    }
+
+    function moveSnake() {
+        // Crear nueva cabeza según la dirección
+        const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+        snake.unshift(head);
+
+        const hasEatenFood = snake[0].x === food.x && snake[0].y === food.y;
+        if (hasEatenFood) {
+            score += 10;
+            xp += 5; // Suma XP para tu sistema Neon Vault
+            updateScoreElements();
+            resetFood();
+        } else {
+            // Si no come, remueve el último segmento para simular movimiento
+            snake.pop();
+        }
+    }
+
+    function drawFood() {
+        context.fillStyle = '#ff007f'; // Comida neón fucsia
+        context.shadowColor = '#ff007f';
+        context.shadowBlur = 5;
+        context.fillRect(food.x, food.y, gridSize, gridSize);
+        context.shadowBlur = 0; // Resetear sombra para no alentar el canvas
+    }
+
+    function hasGameEnded() {
+        // Choque contra las paredes
+        const hitLeftWall = snake[0].x < 0;
+        const hitRightWall = snake[0].x >= canvas.width;
+        const hitToptWall = snake[0].y < 0;
+        const hitBottomWall = snake[0].y >= canvas.height;
+
+        if (hitLeftWall || hitRightWall || hitToptWall || hitBottomWall) return true;
+
+        // Choque contra su propio cuerpo
+        for (let i = 4; i < snake.length; i++) {
+            if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) return true;
+        }
+        return false;
+    }
+
+    function updateScoreElements() {
+        scoreElement.innerText = String(score).padStart(4, '0');
+        xpElement.innerText = xp + " XP";
+
+        // Opcional: Integración con tus funciones del Dashboard principal
+        // if (typeof ganarXpGlobal === 'function') { ganarXpGlobal(xp); }
+    }
+
+    // Manejo de controles
+    document.addEventListener('keydown', changeDirection);
+
+    function changeDirection(event) {
+        if (gameOver) return;
+
+        const keyPressed = event.key;
+        const goingUp = dy === -gridSize;
+        const goingDown = dy === gridSize;
+        const goingRight = dx === gridSize;
+        const goingLeft = dx === -gridSize;
+
+        if ((keyPressed === 'ArrowLeft' || keyPressed === 'a') && !goingRight) {
+            dx = -gridSize; dy = 0;
+        }
+        if ((keyPressed === 'ArrowUp' || keyPressed === 'w') && !goingDown) {
+            dx = 0; dy = -gridSize;
+        }
+        if ((keyPressed === 'ArrowRight' || keyPressed === 'd') && !goingLeft) {
+            dx = gridSize; dy = 0;
+        }
+        if ((keyPressed === 'ArrowDown' || keyPressed === 's') && !goingUp) {
+            dx = 0; dy = gridSize;
+        }
+    }
+
+    startBtn.addEventListener('click', () => {
+        if (gameOver) {
+            gameOver = false;
+            initGame();
+            clearInterval(gameInterval);
+            gameInterval = setInterval(mainLoop, speed);
+            startBtn.innerText = "PLAYING";
+        }
+    });
+
+    // Estado inicial en negro
+    clearCanvas();
+})();
+</script>
+
+           <!-- ==================== NUEVO JUEGO 6: NEON CYBERPUNK RACER (3D-LIKE) ==================== -->
+            <div class="game-card glass" id="game-racer">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">CYBER RACER 2026</div>
+                        <div class="game-genre">• Pseudo-3D • Reflejos • Adrenalina</div>
+                    </div>
+                    <div class="game-icon">🏎️</div>
+                </div>
+                <div class="game-desc">Conduce en la autopista de neón infinita. Esquiva el tráfico flotante usando las flechas o A/D. La carretera se curva dinámicamente.</div>
+                <div class="game-reward">💰 +25 VC por cada 500 metros recorridos</div>
+                <div class="game-screen">
+                    <div class="game-score">Distancia: <span id="racerScore">0</span>m | Velocidad: <span id="racerSpeed">0</span> km/h</div>
+                    <canvas id="racerCanvas" width="320" height="240" style="width: 100%; display: block; background: #000; border: 2px solid var(--primary); border-radius: 8px;"></canvas>
+                    <div class="game-message" id="racerMessage">
+                        <h3 id="racerResult">¡CRASH!</h3>
+                        <p id="racerReward"></p>
+                    </div>
+                </div>
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="startRacerGame()">Acelerar</button>
+                    <button class="btn btn-outline btn-sm" id="racerRestart" onclick="resetRacerGame()" style="display:none;">Reiniciar</button>
+                </div>
+            </div>
+
+            <script>
+                // ==================== NEON CYBERPUNK RACER CORE ENGINE ====================
+                const rCanvas = document.getElementById('racerCanvas');
+                const rCtx = rCanvas.getContext('2d');
+
+                let rState = {
+                    running: false,
+                    distance: 0,
+                    speed: 0,
+                    maxSpeed: 12,
+                    playerX: 0, // Centrado en la pista (-1 a 1)
+                    roadCurve: 0,
+                    currentCurve: 0,
+                    targetCurve: 0,
+                    curveTimer: 0,
+                    obstacles: [],
+                    lines: []
+                };
+
+                // Teclas heredadas de tu configuración global de eventos (keys['a'], etc.)
+
+                function startRacerGame() {
+                    if(rState.running) return;
+                    rState.running = true;
+                    rState.distance = 0;
+                    rState.speed = 0;
+                    rState.playerX = 0;
+                    rState.roadCurve = 0;
+                    rState.currentCurve = 0;
+                    rState.targetCurve = 0;
+                    rState.curveTimer = 0;
+                    rState.obstacles = [];
+
+                    // Inicializar líneas del horizonte
+                    rState.lines = [];
+                    for(let i=0; i<100; i++) {
+                        rState.lines.push({ z: i });
+                    }
+
+                    document.getElementById('racerScore').textContent = '0';
+                    document.getElementById('racerSpeed').textContent = '0';
+                    document.getElementById('racerMessage').classList.remove('show');
+                    document.getElementById('racerRestart').style.display = 'none';
+
+                    if (typeof initAudio === "function") initAudio();
+                    rLoop();
+                }
+
+                function rLoop() {
+                    if (!rState.running) return;
+
+                    // 1. Limpiar pantalla con cielo oscuro cyberpunk
+                    rCtx.fillStyle = '#030308';
+                    rCtx.fillRect(0, 0, rCanvas.width, rCanvas.height);
+
+                    // Dibujar horizonte lejano/montañas neon
+                    rCtx.strokeStyle = 'rgba(176, 38, 255, 0.3)';
+                    rCtx.lineWidth = 1;
+                    rCtx.beginPath();
+                    rCtx.moveTo(0, rCanvas.height / 2);
+                    rCtx.lineTo(rCanvas.width, rCanvas.height / 2);
+                    rCtx.stroke();
+
+                    // 2. Controlar velocidad y aceleración suave
+                    if (rState.speed < rState.maxSpeed) rState.speed += 0.1;
+                    rState.distance += Math.floor(rState.speed);
+                    document.getElementById('racerScore').textContent = rState.distance;
+                    document.getElementById('racerSpeed').textContent = Math.floor(rState.speed * 25);
+
+                    // Controles del jugador (Afectados por la velocidad actual)
+                    if (keys['arrowleft'] || keys['a']) rState.playerX -= 0.04;
+                    if (keys['arrowright'] || keys['d']) rState.playerX += 0.04;
+
+                    // Límites de la carretera (si se sale mucho, disminuye velocidad o choca si hay obstáculos fuera)
+                    rState.playerX = Math.max(-1.3, Math.min(1.3, rState.playerX));
+
+                    // 3. Manejo de curvas matemáticas pseudo-3D
+                    rState.curveTimer--;
+                    if(rState.curveTimer <= 0) {
+                        rState.targetCurve = (Math.random() * 2) - 1; // Izquierda o Derecha aleatoria
+                        rState.curveTimer = 80 + Math.random() * 100;
+                    }
+                    // Interpolación suave hacia la curva objetivo
+                    rState.currentCurve += (rState.targetCurve - rState.currentCurve) * 0.04;
+
+                    // 4. Renderizar carretera en perspectiva usando proyección inversa
+                    let horizon = rCanvas.height / 2;
+                    let rWidth = rCanvas.width;
+                    let rHeight = rCanvas.height;
+
+                    // Dibujar rejilla del suelo (Efecto Synthwave)
+                    for (let y = horizon; y < rHeight; y += 8) {
+                        let progress = (y - horizon) / (rHeight - horizon); // 0 a 1
+                        let widthAtY = progress * rWidth * 0.8;
+                        let curveOffset = Math.pow(1 - progress, 2) * rState.currentCurve * 80;
+                        let centerX = rWidth / 2 + curveOffset;
+
+                        // Líneas laterales de la carretera (Azul Neón)
+                        rCtx.strokeStyle = '#00f3ff';
+                        rCtx.lineWidth = progress * 4;
+                        rCtx.beginPath();
+                        rCtx.moveTo(centerX - widthAtY, y);
+                        rCtx.lineTo(centerX + widthAtY, y);
+                        rCtx.stroke();
+
+                        // Bordes de la pista (Verde o Magenta parpadeante para dar efecto de movimiento)
+                        let speedPhase = Math.floor(rState.distance * 0.1) % 2;
+                        rCtx.fillStyle = speedPhase === 0 ? '#b026ff' : '#00ff9d';
+                        rCtx.fillRect(centerX - widthAtY - 4, y, 4, 4);
+                        rCtx.fillRect(centerX + widthAtY, y, 4, 4);
+                    }
+
+                    // 5. Spawn y render de autos enemigos en perspectiva
+                    if (Math.random() < 0.03 && rState.obstacles.length < 3) {
+                        rState.obstacles.push({
+                            x: (Math.random() * 1.6) - 0.8, // Carril aleatorio
+                            z: 100, // Empieza al fondo en el horizonte
+                            color: Math.random() > 0.5 ? '#ff4444' : '#ffd700'
+                        });
+                    }
+
+                    for (let i = rState.obstacles.length - 1; i >= 0; i--) {
+                        let obs = rState.obstacles[i];
+                        obs.z -= rState.speed * 0.6; // Se acercan según nuestra velocidad
+
+                        // Si el enemigo pasó al jugador, lo borramos de la lista
+                        if (obs.z <= 0) {
+                            rState.obstacles.splice(i, 1);
+                            continue;
+                        }
+
+                        // Calcular proyección 3D a pantalla para el obstáculo
+                        let progress = (100 - obs.z) / 100; // 0 en horizonte, 1 en pantalla completa
+                        if (progress < 0) progress = 0;
+
+                        let y = horizon + progress * (rHeight - horizon);
+                        let scale = progress * 30; // Tamaño dinámico según cercanía
+                        let curveOffset = Math.pow(1 - progress, 2) * rState.currentCurve * 80;
+                        let roadWidthAtY = progress * rWidth * 0.8;
+                        let obsX = (rWidth / 2) + curveOffset + (obs.x * roadWidthAtY);
+
+                        // Dibujar auto enemigo (Caja neon con luces traseras rojas)
+                        if (progress > 0.1) {
+                            rCtx.fillStyle = obs.color;
+                            rCtx.fillRect(obsX - scale / 2, y - scale, scale, scale * 0.6);
+
+                            // Luces rojas traseras de peligro
+                            rCtx.fillStyle = '#ff0000';
+                            rCtx.fillRect(obsX - scale / 2 + 2, y - scale + 2, scale * 0.2, scale * 0.2);
+                            rCtx.fillRect(obsX + scale / 2 - (scale * 0.2) - 2, y - scale + 2, scale * 0.2, scale * 0.2);
+                        }
+
+                        // DETECCIÓN DE COLISIÓN (Cuando el obstáculo está en la zona del jugador z corta entre 5 y 15)
+                        if (obs.z > 5 && obs.z < 15) {
+                            let distanceToPlayer = Math.abs(obs.x - rState.playerX);
+                            if (distanceToPlayer < 0.25) { // ¡Impacto inminente!
+                                endRacerGame();
+                                return;
+                            }
+                        }
+                    }
+
+                    // 6. Dibujar el auto del jugador (Siempre fijo abajo en primer plano)
+                    let pScale = 45;
+                    let pX = (rWidth / 2) + (rState.playerX * (rWidth * 0.4));
+                    let pY = rHeight - 15;
+
+                    // Cuerpo del auto del jugador (Estilo DeLorean o nave cyberpunk)
+                    rCtx.fillStyle = '#00f3ff';
+                    rCtx.beginPath();
+                    rCtx.moveTo(pX - pScale / 2, pY);
+                    rCtx.lineTo(pX - pScale / 3, pY - pScale * 0.5);
+                    rCtx.lineTo(pX + pScale / 3, pY - pScale * 0.5);
+                    rCtx.lineTo(pX + pScale / 2, pY);
+                    rCtx.closePath();
+                    rCtx.fill();
+
+                    // Alerón trasero y luces cyan brillantes
+                    rCtx.fillStyle = '#00ff9d';
+                    rCtx.fillRect(pX - pScale / 2, pY - pScale * 0.6, pScale, pScale * 0.12);
+
+                    requestAnimationFrame(rLoop);
+                }
+
+                function endRacerGame() {
+                    rState.running = false;
+                    const finalReward = Math.floor(rState.distance / 500) * 25;
+                    document.getElementById('racerReward').innerText = `Distancia: ${rState.distance} metros \n Recompensa: +${finalReward} VC`;
+                    document.getElementById('racerMessage').classList.add('show');
+                    document.getElementById('racerRestart').style.display = 'inline-block';
+                    if(typeof sounds !== 'undefined') sounds.explode();
+                    if(finalReward > 0 && typeof addReward === "function") addReward(finalReward);
+                }
+
+                function resetRacerGame() {
+                    document.getElementById('racerMessage').classList.remove('show');
+                    document.getElementById('racerRestart').style.display = 'none';
+                    startRacerGame();
+                }
+            </script>
+
+
+            <!-- NUEVO JUEGO 10: MICRO CARS -->
+            <div class="game-card glass" id="game-hacker">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">TERMINAL BREACH v2.0</div>
+                        <div class="game-genre">• Hacking • Reflejos • Cyber-Decryption</div>
+                    </div>
+                    <div class="game-icon">💾</div>
+                </div>
+                <div class="game-desc">Infiltra la base de datos corporativa. Sincroniza los nodos: presiona "INYECTAR CÓDIGO" exactamente cuando la clave superior coincida con el código de abajo.</div>
+                <div class="game-reward">💰 +30 VC por hackeo exitoso</div>
+                <div class="game-screen">
+                    <div class="game-score">Nivel: <span id="hackLevel">1</span> | Intentos: <span id="hackTries">3</span></div>
+                    <div style="background: #020205; border: 2px solid var(--secondary); border-radius: 8px; padding: 1.5rem; text-align: center; font-family: monospace; position: relative; overflow: hidden; box-shadow: 0 0 10px rgba(176,38,255,0.2);">
+                        <div style="color: var(--muted); font-size: 0.8rem; letter-spacing: 2px;">TARGET BYPASS KEY:</div>
+                        <div id="targetCode" style="color: var(--primary); font-size: 1.8rem; font-weight: bold; text-shadow: 0 0 8px var(--primary); margin: 0.5rem 0;">0x7F</div>
+                        <div style="border-top: 1px dashed rgba(255,255,255,0.1); margin: 0.5rem 0;"></div>
+                        <div style="color: var(--muted); font-size: 0.8rem;">CURRENT MATRIX STREAM:</div>
+                        <div id="streamCode" style="color: var(--secondary); font-size: 1.8rem; font-weight: bold; text-shadow: 0 0 8px var(--secondary);">0xAA</div>
+                    </div>
+                    <div class="game-message" id="hackerMessage">
+                        <h3 id="hackerResult">¡SISTEMA CRACKEADO!</h3>
+                        <p id="hackerReward"></p>
+                    </div>
+                </div>
+                <div class="game-controls">
+                    <button class="btn btn-secondary btn-sm" id="btnHackAction" onclick="startHackerGame()">Iniciar Hackeo</button>
+                    <button class="btn btn-primary btn-sm" id="btnHackInject" onclick="injectCode()" style="display:none;">¡INYECTAR CÓDIGO!</button>
+                </div>
+            </div>
+
+            <script>
+                let hackState = {
+                    running: false,
+                    level: 1,
+                    tries: 3,
+                    codes: ['0x7F', '0xA2', '0xFF', '0xBC', '0x4E', '0xD1', '0x8B', '0x39'],
+                    target: '',
+                    current: '',
+                    interval: null,
+                    speed: 400
+                };
+
+                function startHackerGame() {
+                    hackState.running = true;
+                    hackState.level = 1;
+                    hackState.tries = 3;
+                    hackState.speed = 400;
+                    document.getElementById('hackLevel').textContent = hackState.level;
+                    document.getElementById('hackTries').textContent = hackState.tries;
+                    document.getElementById('hackerMessage').classList.remove('show');
+                    document.getElementById('btnHackAction').style.display = 'none';
+                    document.getElementById('btnHackInject').style.display = 'inline-block';
+
+                    nextHackRound();
+                }
+
+                function nextHackRound() {
+                    if(!hackState.running) return;
+                    clearInterval(hackState.interval);
+
+                    // Elegir objetivo
+                    hackState.target = hackState.codes[Math.floor(Math.random() * hackState.codes.length)];
+                    document.getElementById('targetCode').textContent = hackState.target;
+
+                    // Iniciar bucle de cambio rápido de códigos
+                    hackState.interval = setInterval(() => {
+                        let available = hackState.codes.filter(c => c !== hackState.current);
+                        hackState.current = available[Math.floor(Math.random() * available.length)];
+                        // Probabilidad de que salga el correcto para no tardar una eternidad
+                        if(Math.random() < 0.25) hackState.current = hackState.target;
+
+                        document.getElementById('streamCode').textContent = hackState.current;
+                    }, hackState.speed);
+                }
+
+                function injectCode() {
+                    if(!hackState.running) return;
+
+                    clearInterval(hackState.interval);
+
+                    if(hackState.current === hackState.target) {
+                        // ¡Éxito!
+                        hackState.level++;
+                        hackState.speed = Math.max(120, hackState.speed - 60); // Más rápido el siguiente nivel
+                        document.getElementById('hackLevel').textContent = hackState.level;
+
+                        // Efecto visual verde rápido
+                        document.getElementById('streamCode').style.color = 'var(--success)';
+                        setTimeout(() => {
+                            document.getElementById('streamCode').style.color = 'var(--secondary)';
+                            nextHackRound();
+                        }, 300);
+                    } else {
+                        // ¡Fallo!
+                        hackState.tries--;
+                        document.getElementById('hackTries').textContent = hackState.tries;
+
+                        document.getElementById('streamCode').style.color = 'var(--danger)';
+                        setTimeout(() => {
+                            document.getElementById('streamCode').style.color = 'var(--secondary)';
+                            if(hackState.tries <= 0) {
+                                endHackerGame();
+                            } else {
+                                nextHackRound();
+                            }
+                        }, 300);
+                    }
+                }
+
+                function endHackerGame() {
+                    hackState.running = false;
+                    clearInterval(hackState.interval);
+
+                    const rewardPoints = (hackState.level - 1) * 30;
+                    document.getElementById('hackerResult').textContent = rewardPoints > 0 ? "¡BRECHA EXITOSA!" : "¡ACCESO DENEGADO!";
+                    document.getElementById('hackerReward').innerText = `Niveles hackeados: ${hackState.level - 1} \n Recompensa: +${rewardPoints} VC`;
+                    document.getElementById('hackerMessage').classList.add('show');
+
+                    document.getElementById('btnHackAction').style.display = 'inline-block';
+                    document.getElementById('btnHackAction').textContent = 'Volver a Intentar';
+                    document.getElementById('btnHackInject').style.display = 'none';
+
+                    if(rewardPoints > 0 && typeof addReward === "function") addReward(rewardPoints);
+                }
+            </script>
+              <!-- ========================================== -->
+<!-- SECCIÓN COMPLETAMENTE RECONSTRUIDA DE TETRIS -->
+<!-- ========================================== -->
+<div class="arcade-card" id="game-tetris" style="margin-bottom: 30px;">
+    <div class="arcade-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ff007f; padding-bottom: 10px; margin-bottom: 15px;">
+        <h3 style="color: #ff007f; margin: 0; font-family: 'Courier New', Courier, monospace; text-shadow: 0 0 10px #ff007f;">🕹️ NEON TETRIS</h3>
+        <span class="game-status" style="background: #ff007f; color: #000; padding: 2px 8px; font-size: 0.8rem; font-weight: bold; border-radius: 3px;">FREE TO PLAY</span>
+    </div>
+
+    <div class="game-container" style="display: flex; gap: 20px; justify-content: center; align-items: center; flex-wrap: wrap;">
+        <!-- El Canvas del juego -->
+        <canvas id="tetrisCanvas" width="240" height="400" style="background: #000; border: 2px solid #7000ff; box-shadow: 0 0 15px rgba(112, 0, 255, 0.6);"></canvas>
+
+        <!-- Sidebar de Estado y Puntuación -->
+        <div class="game-sidebar" style="display: flex; flex-direction: column; gap: 15px; min-width: 120px;">
+            <div class="score-box" style="background: #0d0d13; border: 1px solid #333; padding: 10px; text-align: center; border-radius: 4px;">
+                <p style="margin: 0; font-size: 0.8rem; color: #888;">SCORE</p>
+                <span id="tetrisScore" style="font-size: 1.5rem; font-weight: bold; color: #00ffcc; font-family: monospace; text-shadow: 0 0 5px #00ffcc;">0000</span>
+            </div>
+            <div class="score-box" style="background: #0d0d13; border: 1px solid #333; padding: 10px; text-align: center; border-radius: 4px;">
+                <p style="margin: 0; font-size: 0.8rem; color: #888;">XP EARNED</p>
+                <span id="tetrisXp" style="font-size: 1.2rem; font-weight: bold; color: #ffaa00; font-family: monospace;">0 XP</span>
+            </div>
+            <button class="neon-btn" id="startTetrisBtn" style="background: transparent; color: #ff007f; border: 2px solid #ff007f; padding: 10px; font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.3s; font-family: monospace;">START</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- LÓGICA DEL TETRIS (HTML5 CANVAS) ---
+(function() {
+    const canvas = document.getElementById('tetrisCanvas');
+    const context = canvas.getContext('2d');
+    const scoreElement = document.getElementById('tetrisScore');
+    const xpElement = document.getElementById('tetrisXp');
+    const startBtn = document.getElementById('startTetrisBtn');
+
+    context.scale(20, 20); // Escala para bloques de 20x20 píxeles
+
+    let score = 0;
+    let xp = 0;
+    let gameOver = true;
+    let dropCounter = 0;
+    let dropInterval = 1000; // 1 segundo por caída
+    let lastTime = 0;
+
+    // Matriz del tablero (12 de ancho x 20 de alto)
+    const arena = createMatrix(12, 20);
+
+    // Piezas clásicas de Tetris
+    const pieces = 'ILJOTSZ';
+    const player = {
+        pos: {x: 0, y: 0},
+        matrix: null,
+        score: 0
+    };
+
+    const colors = [
+        null,
+        '#ff007f', // Fucsia Neón
+        '#7000ff', // Morado Neón
+        '#00ffcc', // Cian Neón
+        '#ffaa00', // Naranja
+        '#00ff00', // Verde
+        '#ff0000', // Rojo
+        '#ffff00'  // Amarillo
+    ];
+
+    function createMatrix(w, h) {
+        const matrix = [];
+        while (h--) { matrix.push(new Array(w).fill(0)); }
+        return matrix;
+    }
+
+    function createPiece(type) {
+        if (type === 'T') return [[0,0,0],[1,1,1],[0,1,0]];
+        else if (type === 'O') return [[2,2],[2,2]];
+        else if (type === 'L') return [[0,0,3],[3,3,3],[0,0,0]];
+        else if (type === 'J') return [[4,0,0],[4,4,4],[0,0,0]];
+        else if (type === 'I') return [[0,5,0,0],[0,5,0,0],[0,5,0,0],[0,5,0,0]];
+        else if (type === 'S') return [[0,6,6],[6,6,0],[0,0,0]];
+        else if (type === 'Z') return [[7,7,0],[0,7,7],[0,0,0]];
+    }
+
+    function drawMatrix(matrix, offset) {
+        matrix.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value !== 0) {
+                    context.fillStyle = colors[value];
+                    context.fillRect(x + offset.x, y + offset.y, 1, 1);
+                }
+            });
+        });
+    }
+
+    function draw() {
+        context.fillStyle = '#000';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        drawMatrix(arena, {x: 0, y: 0});
+        drawMatrix(player.matrix, player.pos);
+    }
+
+    function merge(arena, player) {
+        player.matrix.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value !== 0) {
+                    arena[y + player.pos.y][x + player.pos.x] = value;
+                }
+            });
+        });
+    }
+
+    function collide(arena, player) {
+        const [m, o] = [player.matrix, player.pos];
+        for (let y = 0; y < m.length; ++y) {
+            for (let x = 0; x < m[y].length; ++x) {
+                if (m[y][x] !== 0 && (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function arenaSweep() {
+        let rowCount = 1;
+        outer: for (let y = arena.length - 1; y > 0; --y) {
+            for (let x = 0; x < arena[y].length; ++x) {
+                if (arena[y][x] === 0) { continue outer; }
+            }
+            const row = arena.splice(y, 1)[0].fill(0);
+            arena.unshift(row);
+            ++y;
+            score += rowCount * 10;
+            xp += rowCount * 2; // Suma XP para tu sistema Neon Vault
+            rowCount *= 2;
+        }
+    }
+
+    function playerDrop() {
+        if (gameOver) return;
+        player.pos.y++;
+        if (collide(arena, player)) {
+            player.pos.y--;
+            merge(arena, player);
+            playerReset();
+            arenaSweep();
+            updateScore();
+        }
+        dropCounter = 0;
+    }
+
+    function playerMove(dir) {
+        if (gameOver) return;
+        player.pos.x += dir;
+        if (collide(arena, player)) { player.pos.x -= dir; }
+    }
+
+    function playerReset() {
+        player.matrix = createPiece(pieces[pieces.length * Math.random() | 0]);
+        player.pos.y = 0;
+        player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
+        if (collide(arena, player)) {
+            arena.forEach(row => row.fill(0));
+            gameOver = true;
+            startBtn.innerText = "RESTART";
+            alert("GAME OVER! Tu puntuación se guardará en Neon Vault.");
+        }
+    }
+
+    function playerRotate(dir) {
+        if (gameOver) return;
+        const pos = player.pos.x;
+        let offset = 1;
+        rotate(player.matrix, dir);
+        while (collide(arena, player)) {
+            player.pos.x += offset;
+            offset = -(offset + (offset > 0 ? 1 : -1));
+            if (offset > player.matrix[0].length) {
+                rotate(player.matrix, -dir);
+                player.pos.x = pos;
+                return;
+            }
+        }
+    }
+
+    function rotate(matrix, dir) {
+        for (let y = 0; y < matrix.length; ++y) {
+            for (let x = 0; x < y; ++x) {
+                [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+            }
+        }
+        if (dir > 0) { matrix.forEach(row => row.reverse()); }
+        else { matrix.reverse(); }
+    }
+
+    function updateScore() {
+        scoreElement.innerText = String(score).padStart(4, '0');
+        xpElement.innerText = xp + " XP";
+
+        // OPCIONAL: Si tienes una función global para el sistema VC/XP de Neon Vault, descoméntala abajo:
+        // if (typeof ganarXpGlobal === 'function') { ganarXpGlobal(xp); }
+    }
+
+    function update(time = 0) {
+        if (!gameOver) {
+            const deltaTime = time - lastTime;
+            lastTime = time;
+            dropCounter += deltaTime;
+            if (dropCounter > dropInterval) { playerDrop(); }
+            draw();
+        }
+        requestAnimationFrame(update);
+    }
+
+    // Controles por Teclado
+    document.addEventListener('keydown', event => {
+        if (gameOver) return;
+        if (event.key === 'ArrowLeft' || event.key === 'a') { playerMove(-1); }
+        else if (event.key === 'ArrowRight' || event.key === 'd') { playerMove(1); }
+        else if (event.key === 'ArrowDown' || event.key === 's') { playerDrop(); }
+        else if (event.key === 'q') { playerRotate(-1); }
+        else if (event.key === 'e' || event.key === 'ArrowUp') { playerRotate(1); }
+    });
+
+    startBtn.addEventListener('click', () => {
+        if (gameOver) {
+            gameOver = false;
+            score = 0;
+            xp = 0;
+            updateScore();
+            playerReset();
+            lastTime = performance.now();
+            update();
+            startBtn.innerText = "PLAYING";
+        }
+    });
+
+    // Dibujar pantalla negra inicial
+    context.fillStyle = '#000';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+})();
+</script>
+        <!-- ==================== SECCIÓN 11: EMULATION GAME (SUPER MARIO ALL-STARS) ==================== -->
+        <section id="emulation-section" style="margin: 3rem 0;">
+            <h2 class="section-title">🕹️ EMULATION VAULT: SNES CLASSICS</h2>
+
+            <div class="game-card glass" style="max-width: 680px; margin: 0 auto;">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">SUPER MARIO ALL-STARS</div>
+                        <div class="game-genre">• Emulador SNES Integrado • Retro</div>
+                    </div>
+                    <div class="game-icon">🍄</div>
+                </div>
+                <div class="game-desc">¡Clásico de 16 bits! Juega con tu teclado, cualquier control USB/Bluetooth conectado, o usa los botones táctiles si estás en celular.</div>
+                <div class="game-reward" style="color: #00ff9d;">🎮 Soporte total para Joystick / Gamepad Activo</div>
+
+                <div class="game-screen" style="position: relative; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid var(--primary);">
+                    <!-- CONTENEDOR DEL EMULADOR WEB -->
+                    <div class="emulador-container" style="position: relative; width: 100%; height: 0; padding-bottom: 75%;">
+                        <iframe id="snesEmulator" src="https://www.retrogames.cc/embed/42436-super-mario-all-stars-usa.html"
+                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+                                scrolling="no" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true">
+                        </iframe>
+                    </div>
+
+                    <!-- CONTROLES TÁCTILES PARA CELULARES (Se activan automáticamente en pantallas chicas) -->
+                    <div class="mario-touch-controls" id="touchControlsContainer">
+                        <!-- Cruceta de Movimiento (Izquierda) -->
+                        <div class="touch-dpad">
+                            <button class="t-btn btn-up" data-key="ArrowUp">▲</button>
+                            <div class="dpad-row">
+                                <button class="t-btn btn-left" data-key="ArrowLeft">◀</button>
+                                <button class="t-btn btn-right" data-key="ArrowRight">▶</button>
+                            </div>
+                            <button class="t-btn btn-down" data-key="ArrowDown">▼</button>
+                        </div>
+
+                        <!-- Botones de Sistema Centrales -->
+                        <div class="touch-system">
+                            <button class="t-btn sys-btn" data-key="ShiftLeft">SELECT</button>
+                            <button class="t-btn sys-btn" data-key="Enter">START</button>
+                        </div>
+
+                        <!-- Botones de Acción SNES (Derecha) -->
+                        <div class="touch-action">
+                            <div class="action-row">
+                                <button class="t-btn action-b btn-purple" data-key="KeyS">X</button>
+                                <button class="t-btn action-b btn-blue" data-key="KeyX">A</button>
+                            </div>
+                            <div class="action-row" style="margin-top: 8px;">
+                                <button class="t-btn action-b btn-red" data-key="KeyA">Y</button>
+                                <button class="t-btn action-b btn-yellow" data-key="KeyZ">B</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ESTILOS CSS EXCLUSIVOS PARA LA PANTALLA TÁCTIL Y RESPONSIVA -->
+        <style>/* --- AMBIENTACIÓN MÁS CÁLIDA Y NEÓN (PAPU STYLE) --- */
+body {
+    /* Un degradado muy sutil de fondo para quitar el negro plano y frío */
+    background: linear-gradient(135deg, #040407 0%, #08050f 50%, #05050c 100%) !important;
+}
+
+/* Efecto aura neón detrás de los títulos de las secciones */
+.section-title {
+    text-shadow: 0 0 10px var(--primary), 0 0 20px rgba(0, 243, 255, 0.2);
+    position: relative;
+    display: inline-block;
+    margin-bottom: 2.5rem !important;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 60%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), transparent);
+}
+
+/* Hacer que las tarjetas brillen de forma interactiva al pasar el mouse */
+.game-card.glass:hover, .poster-card.glass:hover {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.25), inset 0 0 15px rgba(255, 255, 255, 0.02) !important;
+    transform: translateY(-3px);
+    transition: all 0.3s ease;
+}
+            .mario-touch-controls {
+                display: none; /* Oculto en PC */
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px;
+                background: #05050a;
+                border-top: 2px solid var(--primary);
+                user-select: none;
+            }
+            /* Solo se muestra si la pantalla es de celular o tablet */
+            @media (max-width: 768px) {
+                .mario-touch-controls { display: flex; flex-wrap: wrap; }
+            }
+            .t-btn {
+                background: rgba(255, 255, 255, 0.07);
+                border: 2px solid #00f3ff;
+                color: #fff;
+                font-weight: bold;
+                box-shadow: 0 0 6px rgba(0, 243, 255, 0.4);
+                cursor: pointer;
+                touch-action: manipulation;
+            }
+            .t-btn:active { background: #00f3ff; color: #000; }
+            .touch-dpad { display: flex; flex-direction: column; align-items: center; }
+            .dpad-row { display: flex; gap: 24px; margin: 4px 0; }
+            .touch-dpad .t-btn { width: 40px; height: 40px; border-radius: 8px; }
+            .touch-system { display: flex; gap: 10px; margin: 15px auto 0 auto; width: 100%; justify-content: center; }
+            .sys-btn { width: 70px; height: 28px; border-radius: 4px; font-size: 10px; border-color: #b026ff; box-shadow: 0 0 6px rgba(176, 38, 255, 0.4); }
+            .touch-action { display: flex; flex-direction: column; }
+            .action-row { display: flex; gap: 8px; }
+            .action-b { width: 42px; height: 42px; border-radius: 50%; font-size: 14px; }
+            .btn-purple { border-color: #b026ff; }
+            .btn-blue { border-color: #00f3ff; }
+            .btn-red { border-color: #ff0055; }
+            .btn-yellow { border-color: #ff9900; }
+        </style>
+
+        <!-- SCRIPT PARA EL CONTROL POR JOYSTICK Y BOTONES VIRTUALES -->
+        <script>
+            // --- FUNCIÓN PARA INYECTAR PULSACIONES DE TECLADO AL EMULADOR ---
+            function sendEmulatorKey(keyCode, isPressed) {
+                const iframe = document.getElementById('snesEmulator');
+                if (!iframe || !iframe.contentWindow) return;
+
+                // Manda el evento nativo directamente a la ventana del iframe del emulador
+                const eventType = isPressed ? 'keydown' : 'keyup';
+                const eventData = {
+                    type: eventType,
+                    code: keyCode,
+                    key: keyCode,
+                    keyCode: getLegacyKeyCode(keyCode),
+                    bubbles: true,
+                    cancelable: true
+                };
+
+                iframe.contentWindow.postMessage({ type: 'emulator_keyboard', data: eventData }, '*');
+
+                // También lo ejecuta localmente por seguridad del mapeado general
+                window.dispatchEvent(new KeyboardEvent(eventType, { code: keyCode }));
+            }
+
+            function getLegacyKeyCode(code) {
+                const codes = { 'ArrowLeft': 37, 'ArrowUp': 38, 'ArrowRight': 39, 'ArrowDown': 40, 'Enter': 13, 'ShiftLeft': 16, 'KeyZ': 90, 'KeyX': 88, 'KeyA': 65, 'KeyS': 83 };
+                return codes[code] || 0;
+            }
+
+            // --- 1. CONFIGURACIÓN DE BOTONES TÁCTILES ---
+            document.querySelectorAll('.t-btn').forEach(button => {
+                const targetKey = button.getAttribute('data-key');
+                if(!targetKey) return;
+
+                button.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    sendEmulatorKey(targetKey, true);
+                });
+                button.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    sendEmulatorKey(targetKey, false);
+                });
+            });
+
+            // --- 2. CONFIGURACIÓN DE GAMEPAD / CONTROL FÍSICO ---
+            let snesGamepadIdx = null;
+            let snesPrevButtons = {};
+
+            window.addEventListener("gamepadconnected", (e) => {
+                console.log("Joystick detectado para SNES Vault: " + e.gamepad.id);
+                snesGamepadIdx = e.gamepad.index;
+                snesGamepadLoop();
+            });
+
+            window.addEventListener("gamepaddisconnected", () => {
+                snesGamepadIdx = null;
+            });
+
+            function snesGamepadLoop() {
+                if (snesGamepadIdx === null) return;
+                const gamepad = navigator.getGamepads()[snesGamepadIdx];
+                if (!gamepad) return;
+
+                // Mapeo Estándar Retro de Controles (Xbox/PlayStation) a Teclas por defecto del emulador
+                const snesJoyMap = {
+                    14: 'ArrowLeft',   // D-pad Izquierda
+                    15: 'ArrowRight',  // D-pad Derecha
+                    12: 'ArrowUp',     // D-pad Arriba
+                    13: 'ArrowDown',   // D-pad Abajo
+                    0: 'KeyZ',         // Botón A de Xbox -> B en SNES (Salto)
+                    1: 'KeyX',         // Botón B de Xbox -> A en SNES (Salto Spin)
+                    2: 'KeyA',         // Botón X de Xbox -> Y en SNES (Correr)
+                    3: 'KeyS',         // Botón Y de Xbox -> X en SNES
+                    8: 'ShiftLeft',    // Select
+                    9: 'Enter'         // Start
+                };
+
+                Object.keys(snesJoyMap).forEach(btnIdx => {
+                    const pressed = gamepad.buttons[btnIdx]?.pressed;
+                    const keyString = snesJoyMap[btnIdx];
+
+                    if (pressed && !snesPrevButtons[btnIdx]) {
+                        sendEmulatorKey(keyString, true);
+                    } else if (!pressed && snesPrevButtons[btnIdx]) {
+                        sendEmulatorKey(keyString, false);
+                    }
+                    snesPrevButtons[btnIdx] = pressed;
+                });
+
+                // Soporte para sticks analógicos
+                const stickX = gamepad.axes[0];
+                const stickY = gamepad.axes[1];
+
+                if (stickX < -0.5) { sendEmulatorKey('ArrowLeft', true); snesPrevButtons['ax'] = 'L'; }
+                else if (stickX > 0.5) { sendEmulatorKey('ArrowRight', true); snesPrevButtons['ax'] = 'R'; }
+                else if (snesPrevButtons['ax']) {
+                    sendEmulatorKey(snesPrevButtons['ax'] === 'L' ? 'ArrowLeft' : 'ArrowRight', false);
+                    snesPrevButtons['ax'] = null;
+                }
+
+                if (stickY < -0.5) { sendEmulatorKey('ArrowUp', true); snesPrevButtons['ay'] = 'U'; }
+                else if (stickY > 0.5) { sendEmulatorKey('ArrowDown', true); snesPrevButtons['ay'] = 'D'; }
+                else if (snesPrevButtons['ay']) {
+                    sendEmulatorKey(snesPrevButtons['ay'] === 'U' ? 'ArrowUp' : 'ArrowDown', false);
+                    snesPrevButtons['ay'] = null;
+                }
+
+                requestAnimationFrame(snesGamepadLoop);
+            }
+        </script>
+<!-- ========================================== -->
+<!-- SECCIÓN DE NEON RUNNER (ESTILO SONIC) + AUDIO -->
+<!-- ========================================== -->
+<div class="arcade-card" id="game-runner" style="margin-bottom: 30px;">
+    <div class="arcade-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0055ff; padding-bottom: 10px; margin-bottom: 15px;">
+        <h3 style="color: #0055ff; margin: 0; font-family: 'Courier New', Courier, monospace; text-shadow: 0 0 10px #0055ff;">🕹️ NEON RUNNER</h3>
+        <span class="game-status" style="background: #0055ff; color: #fff; padding: 2px 8px; font-size: 0.8rem; font-weight: bold; border-radius: 3px;">SOUND ON 🔊</span>
+    </div>
+
+    <div class="game-container" style="display: flex; gap: 20px; justify-content: center; align-items: center; flex-wrap: wrap;">
+        <!-- El Canvas del juego (Más ancho para un juego de correr) -->
+        <canvas id="runnerCanvas" width="600" height="200" style="background: #000; border: 2px solid #ffaa00; box-shadow: 0 0 15px rgba(255, 170, 0, 0.6);"></canvas>
+
+        <!-- Elemento de Audio Oculto -->
+        <!-- Cambia "radio_gallito_mix.mp3" por la ruta de tu archivo de música -->
+        <audio id="runnerMusic" src="radio_gallito_mix.mp3" loop preload="auto"></audio>
+
+        <!-- Sidebar de Estado y Puntuación -->
+        <div class="game-sidebar" style="display: flex; flex-direction: column; gap: 15px; min-width: 120px;">
+            <div class="score-box" style="background: #0d0d13; border: 1px solid #333; padding: 10px; text-align: center; border-radius: 4px;">
+                <p style="margin: 0; font-size: 0.8rem; color: #888;">DISTANCE</p>
+                <span id="runnerScore" style="font-size: 1.5rem; font-weight: bold; color: #0055ff; font-family: monospace; text-shadow: 0 0 5px #0055ff;">0000</span>
+            </div>
+            <div class="score-box" style="background: #0d0d13; border: 1px solid #333; padding: 10px; text-align: center; border-radius: 4px;">
+                <p style="margin: 0; font-size: 0.8rem; color: #888;">XP EARNED</p>
+                <span id="runnerXp" style="font-size: 1.2rem; font-weight: bold; color: #ffaa00; font-family: monospace;">0 XP</span>
+            </div>
+            <button class="neon-btn" id="startRunnerBtn" style="background: transparent; color: #0055ff; border: 2px solid #0055ff; padding: 10px; font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.3s; font-family: monospace;">START</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+// --- LÓGICA DEL NEON RUNNER (HTML5 CANVAS + AUDIO) ---
+(function() {
+    const canvas = document.getElementById('runnerCanvas');
+    const context = canvas.getContext('2d');
+    const scoreElement = document.getElementById('runnerScore');
+    const xpElement = document.getElementById('runnerXp');
+    const startBtn = document.getElementById('startRunnerBtn');
+    const bgMusic = document.getElementById('runnerMusic');
+
+    // Propiedades del jugador (El "Sonic")
+    const player = {
+        x: 50,
+        y: 150,
+        width: 30,
+        height: 30,
+        dy: 0,
+        jumpForce: -12,
+        originalHeight: 30,
+        grounded: false,
+        jumpTimer: 0
+    };
+
+    let obstacles = [];
+    let score = 0;
+    let xp = 0;
+    let gameOver = true;
+    let gameSpeed = 5;
+    let gravity = 0.6;
+    let frameCount = 0;
+    let animationId;
+
+    function initGame() {
+        player.y = 150;
+        player.dy = 0;
+        obstacles = [];
+        score = 0;
+        xp = 0;
+        gameSpeed = 5;
+        frameCount = 0;
+        gameOver = false;
+
+        // ¡Activar la música tipo Radio Gallito!
+        bgMusic.currentTime = 0;
+        bgMusic.play().catch(e => console.log("El navegador bloqueó el autoplay de audio"));
+
+        updateScoreElements();
+        animate();
+    }
+
+    function spawnObstacle() {
+        const size = Math.random() * (40 - 20) + 20; // Altura aleatoria del obstáculo
+        const obstacle = {
+            x: canvas.width,
+            y: canvas.height - size,
+            width: 20,
+            height: size
+        };
+        obstacles.push(obstacle);
+    }
+
+    function drawPlayer() {
+        context.fillStyle = '#0055ff'; // Azul "Sonic" Neón
+        context.shadowColor = '#0055ff';
+        context.shadowBlur = 10;
+        context.fillRect(player.x, player.y, player.width, player.height);
+        context.shadowBlur = 0;
+    }
+
+    function drawObstacles() {
+        context.fillStyle = '#ffaa00'; // Naranja neón para peligro
+        context.shadowColor = '#ffaa00';
+        context.shadowBlur = 10;
+        obstacles.forEach(obs => {
+            context.fillRect(obs.x, obs.y, obs.width, obs.height);
+        });
+        context.shadowBlur = 0;
+    }
+
+    function drawGround() {
+        context.strokeStyle = '#333';
+        context.beginPath();
+        context.moveTo(0, canvas.height - 1);
+        context.lineTo(canvas.width, canvas.height - 1);
+        context.stroke();
+    }
+
+    function animate() {
+        if (gameOver) return;
+
+        animationId = requestAnimationFrame(animate);
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Físicas del jugador
+        player.dy += gravity;
+        player.y += player.dy;
+
+        // Colisión con el suelo
+        if (player.y + player.height >= canvas.height) {
+            player.y = canvas.height - player.height;
+            player.dy = 0;
+            player.grounded = true;
+        } else {
+            player.grounded = false;
+        }
+
+        // Generar obstáculos
+        frameCount++;
+        if (frameCount % Math.max(60, 120 - Math.floor(gameSpeed * 2)) === 0) {
+            spawnObstacle();
+        }
+
+        // Mover y dibujar obstáculos
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            let obs = obstacles[i];
+            obs.x -= gameSpeed;
+
+            // Colisión
+            if (
+                player.x < obs.x + obs.width &&
+                player.x + player.width > obs.x &&
+                player.y < obs.y + obs.height &&
+                player.y + player.height > obs.y
+            ) {
+                // Fin del juego
+                gameOver = true;
+                bgMusic.pause(); // Detener la música
+                cancelAnimationFrame(animationId);
+                startBtn.innerText = "RESTART";
+                alert("CRASH! Audio detenido. Puntuación guardada en Neon Vault.");
+                return;
+            }
+
+            // Eliminar obstáculos que salen de la pantalla
+            if (obs.x + obs.width < 0) {
+                obstacles.splice(i, 1);
+            }
+        }
+
+        // Puntuación y Dificultad
+        score++;
+        if (score % 100 === 0) {
+            gameSpeed += 0.2; // Aumentar velocidad progresivamente
+            xp += 10; // Otorgar XP
+            updateScoreElements();
+        }
+
+        // Dibujado
+        drawGround();
+        drawObstacles();
+        drawPlayer();
+
+        // Actualizar visual de la distancia
+        scoreElement.innerText = String(score).padStart(4, '0');
+    }
+
+    function updateScoreElements() {
+        scoreElement.innerText = String(score).padStart(4, '0');
+        xpElement.innerText = xp + " XP";
+    }
+
+    // Controles (Espacio o Flecha Arriba para saltar)
+    document.addEventListener('keydown', event => {
+        if (gameOver) return;
+        if ((event.code === 'Space' || event.code === 'ArrowUp') && player.grounded) {
+            player.dy = player.jumpForce;
+            player.grounded = false;
+        }
+    });
+
+    startBtn.addEventListener('click', () => {
+        if (gameOver) {
+            initGame();
+            startBtn.innerText = "PLAYING";
+        }
+    });
+
+    // Pantalla de inicio en negro
+    context.fillStyle = '#000';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+})();
+</script>
+        <!-- SECCIÓN DE PÓSTERS -->
+        <section style="margin: 3rem 0;">
+            <h2 class="section-title">🖼️ GALERÍA DE PÓSTERS RETRO</h2>
+            <div class="gallery-grid">
+                <!-- POSTER VAN HALEN -->
+                <div class="poster-card glass">
+                    <div class="poster-thumb" style="background-image: linear-gradient(to top, rgba(0,0,0,0.8), transparent), url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=500&auto=format&fit=crop');">
+                        <div class="poster-info">
+                            <div class="poster-tag">Rock Legend[cite: 1]</div>
+                            <div class="poster-title">Van Halen Vintage Style[cite: 1]</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ESPACIO PARA POSTERS EXPLICITOS / WAIFUS -->
+                <div class="poster-card glass">
+                    <div class="poster-thumb" style="background-image: linear-gradient(to top, rgba(0,0,0,0.8), transparent), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=500&auto=format&fit=crop');">
+                        <div class="poster-info">
+                            <div class="poster-tag">Cyberpunk / Waifu Art[cite: 1]</div>
+                            <div class="poster-title">Neon Cyber Waifu (Experimental)[cite: 1]</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section style="margin: 3rem 0;">
+            <h2 class="section-title">🏆 TABLA DE CLASIFICACIÓN</h2>
+            <div class="glass" style="padding: 1.5rem; border-radius: 16px;">
+                <div class="leaderboard">
+                    <div class="lb-item" style="font-weight:700; color:var(--primary); margin-bottom:0.5rem;">
+                        <span class="lb-rank">RANK</span>
+                        <span class="lb-name">JUGADOR</span>
+                        <span class="lb-score">PUNTOS</span>
+                    </div>
+                    <div id="leaderboardContent"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+<!-- ==================== TARJETA: ZONA SEGA (SONIC 2 RECORTADO) ==================== -->
+<div class="game-card glass" style="max-width: 680px; margin: 0 auto;">
+    <div class="game-header">
+        <div>
+            <div class="game-title" style="color: #00f3ff; text-transform: uppercase;">Sonic The Hedgehog 2</div>
+            <div class="game-genre">• ZONA SEGA GENESIS • Retro</div>
+        </div>
+        <div class="game-icon">🦔💨</div>
+    </div>
+
+    <div class="game-desc">¡Pura velocidad a 16-bits! Compatible con teclado, control USB/Bluetooth o pantalla táctil.</div>
+    <div class="game-reward" style="color: #00ff9d;">🎮 Soporte total para Joystick / Gamepad Activo</div>
+
+    <div class="game-screen" style="position: relative; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid #00f3ff;">
+
+        <!-- CONTENEDOR DEL EMULADOR WEB (¡AQUÍ ESTÁ EL RECORTE A 60%!) -->
+        <div class="emulador-container" style="position: relative; width: 100%; height: 0; padding-bottom: 60%;">
+            <iframe id="segaEmulator" src="https://www.retrogames.cc/embed/40049-sonic-the-hedgehog-2-world.html"
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+                    scrolling="no" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true">
+            </iframe>
+        </div>
+
+        <!-- CONTROLES TÁCTILES PARA CELULARES (Layout SEGA A-B-C) -->
+        <div class="mario-touch-controls touch-container">
+            <!-- Cruceta de Movimiento -->
+            <div class="touch-dpad">
+                <button class="t-btn btn-up" data-key="ArrowUp">▲</button>
+                <div class="dpad-row">
+                    <button class="t-btn btn-left" data-key="ArrowLeft">◀</button>
+                    <button class="t-btn btn-right" data-key="ArrowRight">▶</button>
+                </div>
+                <button class="t-btn btn-down" data-key="ArrowDown">▼</button>
+            </div>
+
+            <!-- Botones de Sistema -->
+            <div class="touch-system">
+                <button class="t-btn sys-btn" data-key="ShiftLeft">MODE</button>
+                <button class="t-btn sys-btn" data-key="Enter">START</button>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="touch-action">
+                <div class="action-row">
+                    <button class="t-btn action-b btn-purple" style="visibility:hidden;">-</button>
+                    <button class="t-btn action-b btn-blue" data-key="KeyX">C</button>
+                </div>
+                <div class="action-row" style="margin-top: 8px;">
+                    <button class="t-btn action-b btn-red" data-key="KeyA">A</button>
+                    <button class="t-btn action-b btn-yellow" data-key="KeyZ">B</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ==================== FIN TARJETA: ZONA SEGA ==================== -->
+    <footer>
+        <p>NEON VAULT © 2026 | Arcade Zone | Diseñado con amor para jugadores retro[cite: 1]</p>
+    </footer>
+
+    <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+
+    <script>
+        // ==================== AUDIO SYSTEM ====================
+        let audioContext;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(frequency, duration, type = 'sine', volume = 0.3, volumeEnv = true) {
+            if (!soundEnabled || !audioContext) return;
+            try {
+                const now = audioContext.currentTime;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.type = type;
+                osc.frequency.value = frequency;
+                if (volumeEnv) {
+                    gain.gain.setValueAtTime(volume, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+                } else {
+                    gain.gain.setValueAtTime(volume, now);
+                }
+                osc.start(now);
+                osc.stop(now + duration);
+            } catch (e) { console.log('Audio error:', e); }
+        }
+
+        function playSequence(sequence) {
+            if (!soundEnabled) return;
+            initAudio();
+            let delay = 0;
+            sequence.forEach(({ freq, duration, type = 'sine', volume = 0.3 }) => {
+                setTimeout(() => playSound(freq, duration, type, volume), delay);
+                delay += duration * 1000 + 50;
+            });
+        }
+
+        const sounds = {
+            shoot: () => { initAudio(); playSound(800, 0.05, 'square', 0.15); },
+            tap: () => { initAudio(); playSound(1200, 0.03, 'sine', 0.15); },
+            click: () => { initAudio(); playSound(600, 0.05, 'square', 0.1); },
+            hit: () => { initAudio(); playSequence([{ freq: 200, duration: 0.08, type: 'triangle', volume: 0.25 }]); },
+            explode: () => { initAudio(); playSequence([{ freq: 150, duration: 0.1, type: 'sine', volume: 0.4 }, { freq: 100, duration: 0.15, type: 'sine', volume: 0.3 }]); },
+            levelUp: () => { initAudio(); playSequence([{ freq: 523, duration: 0.1 }, { freq: 659, duration: 0.1 }, { freq: 784, duration: 0.2 }]); },
+            success: () => { initAudio(); playSequence([{ freq: 500, duration: 0.1 }, { freq: 600, duration: 0.15 }]); },
+            gameOver: () => { initAudio(); playSequence([{ freq: 400, duration: 0.15 }, { freq: 300, duration: 0.15 }, { freq: 200, duration: 0.3 }]); },
+            coin: () => { initAudio(); playSequence([{ freq: 800, duration: 0.08, volume: 0.2 }, { freq: 1000, duration: 0.1, volume: 0.25 }]); },
+            enemyShoot: () => { initAudio(); playSound(300, 0.04, 'square', 0.1); }
+        };
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            if (soundEnabled) {
+                btn.textContent = '🔊';
+                btn.classList.remove('muted');
+                sounds.success();
+            } else {
+                btn.textContent = '🔇';
+                btn.classList.add('muted');
+            }
+            localStorage.setItem('soundEnabled', soundEnabled);
+        }
+
+        // ==================== STATE ====================
+        let userState = { vc: 500, xp: 0, level: 1, totalPoints: 0, games: {} };
+
+        function loadState() {
+            const saved = localStorage.getItem('neonVaultState');
+            if (saved) userState = JSON.parse(saved);
+            const soundSaved = localStorage.getItem('soundEnabled');
+            if (soundSaved === 'false') {
+                soundEnabled = false;
+                document.getElementById('soundToggle').textContent = '🔇';
+                document.getElementById('soundToggle').classList.add('muted');
+            }
+            updateStats();
+            updateLeaderboard();
+        }
+
+        function saveState() {
+            localStorage.setItem('neonVaultState', JSON.stringify(userState));
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('vcCount').textContent = userState.vc;
+            document.getElementById('xpCount').textContent = userState.xp;
+            document.getElementById('levelCount').textContent = userState.level;
+        }
+
+        function addReward(vc, xp = 0) {
+            userState.vc += vc;
+            userState.xp += xp || Math.floor(vc / 5);
+            userState.totalPoints += vc;
+            sounds.coin();
+            if (userState.xp >= userState.level * 100) {
+                userState.level++;
+                userState.xp = 0;
+                sounds.levelUp();
+                alert(`🎉 ¡SUBISTE AL NIVEL ${userState.level}!`);
+            }
+            saveState();
+        }
+
+        // ==================== TAP GAME ====================
+        let tapGameState = { running: false, taps: 0, timeLeft: 10 };
+        function startTapGame() {
+            tapGameState = { running: true, taps: 0, timeLeft: 10 };
+            document.getElementById('tapZone').classList.add('active');
+            document.getElementById('tapInstructions').textContent = `10s - ¡CLICKEA!`;
+            document.getElementById('tapZone').onclick = () => {
+                if (tapGameState.running) {
+                    tapGameState.taps++;
+                    document.getElementById('tapScore').textContent = tapGameState.taps;
+                    sounds.tap();
+                }
+            };
+            const timer = setInterval(() => {
+                tapGameState.timeLeft--;
+                document.getElementById('tapInstructions').textContent = `${tapGameState.timeLeft}s`;
+                if (tapGameState.timeLeft <= 0) {
+                    clearInterval(timer);
+                    endTapGame();
+                }
+            }, 1000);
+        }
+
+        function endTapGame() {
+            tapGameState.running = false;
+            const reward = Math.floor(tapGameState.taps / 5) * 10;
+            document.getElementById('tapResult').textContent = `🎉 ${tapGameState.taps} TAPS!`;
+            document.getElementById('tapReward').textContent = `+${reward} VC`;
+            document.getElementById('tapMessage').classList.add('show');
+            document.getElementById('tapZone').classList.remove('active');
+            document.getElementById('tapZone').onclick = null;
+            document.getElementById('tapRestart').style.display = 'inline-block';
+            sounds.success();
+            addReward(reward);
+        }
+        function resetTapGame() {
+            document.getElementById('tapZone').classList.remove('active');
+            document.getElementById('tapScore').textContent = '0';
+            document.getElementById('tapMessage').classList.remove('show');
+            document.getElementById('tapRestart').style.display = 'none';
+        }
+
+        // ==================== MEMORY GAME ====================
+        const emojis = ['🎮', '🕹️', '👾', '🎯', '⚡', '💎', '🏆', '🌟'];
+        let memoryGameState = { cards: [], flipped: [], matched: 0, moves: 0 };
+        function initMemoryGrid() {
+            const shuffled = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+            memoryGameState.cards = shuffled.map((emoji, i) => ({ id: i, emoji, flipped: false, matched: false }));
+            renderMemoryGrid();
+        }
+        function renderMemoryGrid() {
+            const grid = document.getElementById('memoryGrid');
+            grid.innerHTML = memoryGameState.cards.map(card => {
+                let classes = 'memory-card';
+                if (card.flipped) classes += ' flipped';
+                if (card.matched) classes += ' matched';
+                return `<button class="${classes}" onclick="flipMemoryCard(${card.id})">${card.matched ? card.emoji : '?'}</button>`;
+            }).join('');
+        }
+        function flipMemoryCard(id) {
+            const card = memoryGameState.cards[id];
+            if (card.flipped || card.matched || memoryGameState.flipped.length === 2) return;
+            card.flipped = true;
+            memoryGameState.flipped.push(id);
+            renderMemoryGrid();
+            sounds.click();
+            if (memoryGameState.flipped.length === 2) {
+                memoryGameState.moves++;
+                document.getElementById('memoryMoves').textContent = memoryGameState.moves;
+                const [id1, id2] = memoryGameState.flipped;
+                if (memoryGameState.cards[id1].emoji === memoryGameState.cards[id2].emoji) {
+                    sounds.success();
+                    memoryGameState.cards[id1].matched = true;
+                    memoryGameState.cards[id2].matched = true;
+                    memoryGameState.matched++;
+                    memoryGameState.flipped = [];
+                    renderMemoryGrid();
+                    if (memoryGameState.matched === emojis.length) endMemoryGame();
+                } else {
+                    setTimeout(() => {
+                        memoryGameState.cards[id1].flipped = false;
+                        memoryGameState.cards[id2].flipped = false;
+                        memoryGameState.flipped = [];
+                        renderMemoryGrid();
+                    }, 800);
+                }
+            }
+        }
+        function startMemoryGame() {
+            memoryGameState = { cards: [], flipped: [], matched: 0, moves: 0 };
+            initMemoryGrid();
+            document.getElementById('memoryMoves').textContent = '0';
+            document.getElementById('memoryMessage').classList.remove('show');
+            document.getElementById('memoryRestart').style.display = 'none';
+        }
+        function endMemoryGame() {
+            const reward = memoryGameState.moves < 25 ? 30 : Math.max(10, 30 - memoryGameState.moves);
+            document.getElementById('memoryResult').textContent = `✅ ¡GANASTE!`;
+            document.getElementById('memoryReward').textContent = `${memoryGameState.moves} movimientos\n+${reward} VC`;
+            document.getElementById('memoryMessage').classList.add('show');
+            document.getElementById('memoryRestart').style.display = 'inline-block';
+            sounds.levelUp();
+            addReward(reward);
+        }
+        function resetMemoryGame() {
+            document.getElementById('memoryMessage').classList.remove('show');
+            document.getElementById('memoryRestart').style.display = 'none';
+        }
+
+        // ==================== OBSTACLE GAME ====================
+        const obstacleCanvas = document.getElementById('obstacleCanvas');
+        const ctx = obstacleCanvas.getContext('2d');
+        let obstacleGameState = { running: false, playerX: 175, playerY: 250, playerWidth: 30, playerHeight: 30, obstacles: [], score: 0, startTime: 0 };
+        const keys = {};
+        window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+        window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+        function startObstacleGame() {
+            obstacleGameState = { running: true, playerX: 175, playerY: 250, playerWidth: 30, playerHeight: 30, obstacles: [], score: 0, startTime: Date.now() };
+            document.getElementById('obstacleTime').textContent = '0';
+            document.getElementById('obstacleMessage').classList.remove('show');
+            document.getElementById('obstacleRestart').style.display = 'none';
+            gameLoopObstacle();
+        }
+        function gameLoopObstacle() {
+            if (!obstacleGameState.running) return;
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, obstacleCanvas.width, obstacleCanvas.height);
+            if (keys['arrowleft'] || keys['a']) obstacleGameState.playerX -= 6;
+            if (keys['arrowright'] || keys['d']) obstacleGameState.playerX += 6;
+            obstacleGameState.playerX = Math.max(0, Math.min(obstacleCanvas.width - obstacleGameState.playerWidth, obstacleGameState.playerX));
+            ctx.fillStyle = '#00f3ff';
+            ctx.fillRect(obstacleGameState.playerX, obstacleGameState.playerY, obstacleGameState.playerWidth, obstacleGameState.playerHeight);
+            if (Math.random() < 0.02) {
+                obstacleGameState.obstacles.push({ x: Math.random() * (obstacleCanvas.width - 40), y: -20, width: 40, height: 20, speed: 3 + Math.random() * 2 });
+            }
+            obstacleGameState.obstacles.forEach((obs, i) => {
+                obs.y += obs.speed;
+                ctx.fillStyle = '#ff4444';
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+                if (obs.x < obstacleGameState.playerX + obstacleGameState.playerWidth && obs.x + obs.width > obstacleGameState.playerX && obs.y < obstacleGameState.playerY + obstacleGameState.playerHeight && obs.y + obs.height > obstacleGameState.playerY) {
+                    endObstacleGame();
+                    return;
+                }
+                if (obs.y > obstacleCanvas.height) {
+                    obstacleGameState.obstacles.splice(i, 1);
+                    obstacleGameState.score++;
+                }
+            });
+            const time = Math.floor((Date.now() - obstacleGameState.startTime) / 1000);
+            document.getElementById('obstacleTime').textContent = time;
+            requestAnimationFrame(gameLoopObstacle);
+        }
+        function endObstacleGame() {
+            obstacleGameState.running = false;
+            const time = Math.floor((Date.now() - obstacleGameState.startTime) / 1000);
+            const reward = Math.max(5, time * 5);
+            document.getElementById('obstacleResult').textContent = `💥 ¡GAME OVER!`;
+            document.getElementById('obstacleReward').textContent = `Sobreviviste ${time}s\n+${reward} VC`;
+            document.getElementById('obstacleMessage').classList.add('show');
+            document.getElementById('obstacleRestart').style.display = 'inline-block';
+            sounds.gameOver();
+            addReward(reward);
+        }
+        function resetObstacleGame() {
+            document.getElementById('obstacleMessage').classList.remove('show');
+            document.getElementById('obstacleRestart').style.display = 'none';
+        }
+
+        // ==================== SPACE GAME ====================
+        const spaceCanvas = document.getElementById('spaceCanvas');
+        const spaceCtx = spaceCanvas.getContext('2d');
+        let spaceGameState = { running: false, playerX: spaceCanvas.width / 2, playerY: spaceCanvas.height - 40, playerWidth: 25, playerHeight: 30, health: 3, kills: 0, bullets: [], enemies: [], enemyBullets: [], score: 0, wave: 1, invulnerable: false, shootCooldown: 0 };
+        const spaceKeys = {};
+        window.addEventListener('keydown', e => {
+            spaceKeys[e.key.toLowerCase()] = true;
+            if (e.key === ' ' && spaceGameState.running && spaceGameState.shootCooldown <= 0) {
+                spaceGameState.bullets.push({ x: spaceGameState.playerX + spaceGameState.playerWidth / 2, y: spaceGameState.playerY, width: 4, height: 12, speed: 7 });
+                spaceGameState.shootCooldown = 5;
+                sounds.shoot();
+                e.preventDefault();
+            }
+        });
+        window.addEventListener('keyup', e => spaceKeys[e.key.toLowerCase()] = false);
+
+        function startSpaceGame() {
+            spaceGameState = { running: true, playerX: spaceCanvas.width / 2, playerY: spaceCanvas.height - 40, playerWidth: 25, playerHeight: 30, health: 3, kills: 0, bullets: [], enemies: [], enemyBullets: [], score: 0, wave: 1, invulnerable: false, shootCooldown: 0 };
+            document.getElementById('spaceHealth').textContent = '3';
+            document.getElementById('spaceKills').textContent = '0';
+            document.getElementById('spaceMessage').classList.remove('show');
+            document.getElementById('spaceRestart').style.display = 'none';
+            for (let i = 0; i < 5; i++) {
+                spaceGameState.enemies.push({ x: Math.random() * (spaceCanvas.width - 30), y: -50 - i * 60, width: 30, height: 25, speed: 2 + Math.random() * 1, shootTimer: 0 });
+            }
+            gameLoopSpace();
+        }
+        function gameLoopSpace() {
+            if (!spaceGameState.running) return;
+            spaceCtx.fillStyle = '#000';
+            spaceCtx.fillRect(0, 0, spaceCanvas.width, spaceCanvas.height);
+            if (spaceKeys['arrowleft'] || spaceKeys['a']) spaceGameState.playerX -= 5;
+            if (spaceKeys['arrowright'] || spaceKeys['d']) spaceGameState.playerX += 5;
+            spaceGameState.playerX = Math.max(0, Math.min(spaceCanvas.width - spaceGameState.playerWidth, spaceGameState.playerX));
+            spaceCtx.fillStyle = '#00f3ff';
+            spaceCtx.beginPath();
+            spaceCtx.moveTo(spaceGameState.playerX + spaceGameState.playerWidth / 2, spaceGameState.playerY);
+            spaceCtx.lineTo(spaceGameState.playerX, spaceGameState.playerY + spaceGameState.playerHeight);
+            spaceCtx.lineTo(spaceGameState.playerX + spaceGameState.playerWidth, spaceGameState.playerY + spaceGameState.playerHeight);
+            spaceCtx.fill();
+            spaceGameState.shootCooldown--;
+            spaceGameState.bullets.forEach((bullet, i) => {
+                bullet.y -= bullet.speed;
+                spaceCtx.fillStyle = '#00ff9d';
+                spaceCtx.fillRect(bullet.x - bullet.width / 2, bullet.y, bullet.width, bullet.height);
+                if (bullet.y < 0) spaceGameState.bullets.splice(i, 1);
+            });
+            spaceGameState.enemies.forEach((enemy, i) => {
+                enemy.y += enemy.speed;
+                enemy.shootTimer++;
+                spaceCtx.fillStyle = '#b026ff';
+                spaceCtx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                if (enemy.shootTimer > 80 && Math.random() > 0.7) {
+                    spaceGameState.enemyBullets.push({ x: enemy.x + enemy.width / 2, y: enemy.y + enemy.height, width: 3, height: 10, speed: 4 });
+                    sounds.enemyShoot();
+                    enemy.shootTimer = 0;
+                }
+                spaceGameState.bullets.forEach((bullet, j) => {
+                    if (bullet.x > enemy.x && bullet.x < enemy.x + enemy.width && bullet.y > enemy.y && bullet.y < enemy.y + enemy.height) {
+                        spaceGameState.enemies.splice(i, 1);
+                        spaceGameState.bullets.splice(j, 1);
+                        spaceGameState.kills++;
+                        document.getElementById('spaceKills').textContent = spaceGameState.kills;
+                        sounds.explode();
+                        if (spaceGameState.kills % 5 === 0) {
+                            spaceGameState.wave++;
+                            for (let k = 0; k < spaceGameState.wave + 2; k++) {
+                                spaceGameState.enemies.push({ x: Math.random() * (spaceCanvas.width - 30), y: -50 - Math.random() * 100, width: 30, height: 25, speed: 2 + Math.random() * 1.5, shootTimer: 0 });
+                            }
+                        }
+                    }
+                });
+                if (enemy.y > spaceCanvas.height) {
+                    spaceGameState.enemies.splice(i, 1);
+                    spaceGameState.health--;
+                    document.getElementById('spaceHealth').textContent = spaceGameState.health;
+                    sounds.hit();
+                    if (spaceGameState.health <= 0) { endSpaceGame(); return; }
+                }
+            });
+            spaceGameState.enemyBullets.forEach((bullet, i) => {
+                bullet.y += bullet.speed;
+                spaceCtx.fillStyle = '#ff4444';
+                spaceCtx.fillRect(bullet.x - bullet.width / 2, bullet.y, bullet.width, bullet.height);
+                if (!spaceGameState.invulnerable && bullet.x > spaceGameState.playerX && bullet.x < spaceGameState.playerX + spaceGameState.playerWidth && bullet.y > spaceGameState.playerY && bullet.y < spaceGameState.playerY + spaceGameState.playerHeight) {
+                    spaceGameState.enemyBullets.splice(i, 1);
+                    spaceGameState.health--;
+                    document.getElementById('spaceHealth').textContent = spaceGameState.health;
+                    sounds.hit();
+                    spaceGameState.invulnerable = true;
+                    setTimeout(() => spaceGameState.invulnerable = false, 1500);
+                    if (spaceGameState.health <= 0) { endSpaceGame(); return; }
+                }
+                if (bullet.y > spaceCanvas.height) spaceGameState.enemyBullets.splice(i, 1);
+            });
+            requestAnimationFrame(gameLoopSpace);
+        }
+        function endSpaceGame() {
+            spaceGameState.running = false;
+            const reward = Math.max(15, spaceGameState.kills * 15);
+            document.getElementById('spaceResult').textContent = `💥 ¡GAME OVER!`;
+            document.getElementById('spaceReward').textContent = `${spaceGameState.kills} enemigos destruidos\n+${reward} VC`;
+            document.getElementById('spaceMessage').classList.add('show');
+            document.getElementById('spaceRestart').style.display = 'inline-block';
+            sounds.gameOver();
+            addReward(reward);
+        }
+        function resetSpaceGame() {
+            document.getElementById('spaceMessage').classList.remove('show');
+            document.getElementById('spaceRestart').style.display = 'none';
+        }
+
+        // ==================== TRIVIA ====================
+        const triviaQuestions = [
+            { q: '¿Cuál fue el primer videojuego lanzado por Nintendo?', options: ['Donkey Kong', 'Mario Bros', 'Game & Watch', 'The Legend of Zelda'], correct: 0 },
+            { q: '¿En qué año se lanzó el Pac-Man original?', options: ['1979', '1980', '1981', '1982'], correct: 1 },
+            { q: '¿Cuál es el nombre del fontanero de Nintendo?', options: ['Luigi', 'Mario', 'Toad', 'Wario'], correct: 1 },
+            { q: '¿Cuál fue la consola más vendida de todos los tiempos?', options: ['PlayStation 2', 'Nintendo DS', 'PlayStation 4', 'Game Boy'], correct: 0 },
+            { q: '¿En qué año se lanzó el primer Zelda?', options: ['1985', '1986', '1987', '1988'], correct: 0 }
+        ];
+        let triviaGameState = { questions: [], current: 0, correct: 0, answered: false };
+        function startTriviaGame() {
+            triviaGameState = { questions: triviaQuestions.sort(() => Math.random() - 0.5).slice(0, 3), current: 0, correct: 0, answered: false };
+            document.getElementById('triviaStart').style.display = 'none';
+            document.getElementById('triviaContainer').style.display = 'block';
+            document.getElementById('triviaMessage').classList.remove('show');
+            document.getElementById('triviaRestart').style.display = 'none';
+            showTriviaQuestion();
+        }
+        function showTriviaQuestion() {
+            const q = triviaGameState.questions[triviaGameState.current];
+            document.getElementById('triviaQuestion').textContent = q.q;
+            document.getElementById('triviaOptions').innerHTML = q.options.map((opt, i) => `<button class="trivia-btn" onclick="answerTrivia(${i})">${opt}</button>`).join('');
+            document.getElementById('triviaCorrect').textContent = triviaGameState.correct;
+        }
+        function answerTrivia(selected) {
+            if (triviaGameState.answered) return;
+            triviaGameState.answered = true;
+            const q = triviaGameState.questions[triviaGameState.current];
+            const buttons = document.querySelectorAll('.trivia-btn');
+            buttons.forEach((btn, i) => {
+                if (i === q.correct) btn.classList.add('correct');
+                else if (i === selected) btn.classList.add('incorrect');
+                btn.disabled = true;
+            });
+            if (selected === q.correct) { triviaGameState.correct++; sounds.success(); }
+            else { sounds.hit(); }
+            setTimeout(() => {
+                triviaGameState.current++;
+                if (triviaGameState.current < 3) { triviaGameState.answered = false; showTriviaQuestion(); }
+                else { endTriviaGame(); }
+            }, 1500);
+        }
+        function endTriviaGame() {
+            document.getElementById('triviaContainer').style.display = 'none';
+            const reward = triviaGameState.correct * 20;
+            document.getElementById('triviaResult').textContent = `${triviaGameState.correct}/3 correctas`;
+            document.getElementById('triviaReward').textContent = `+${reward} VC`;
+            document.getElementById('triviaMessage').classList.add('show');
+            document.getElementById('triviaRestart').style.display = 'inline-block';
+            addReward(reward);
+        }
+        function resetTriviaGame() {
+            document.getElementById('triviaStart').style.display = 'block';
+            document.getElementById('triviaMessage').classList.remove('show');
+            document.getElementById('triviaRestart').style.display = 'none';
+        }
+
+        // ==================== LEADERBOARD ====================
+        function updateLeaderboard() {
+            const leaderboard = [
+                { name: 'NEON_PHANTOM', score: userState.totalPoints + 350 },
+                { name: 'CYBER_NOVA', score: Math.max(userState.totalPoints, 450) },
+                { name: 'TÚ (PLAYER)', score: userState.totalPoints, highlight: true },
+                { name: 'RETRO_KING', score: Math.max(userState.totalPoints - 100, 250) }
+            ].sort((a, b) => b.score - a.score);
+            document.getElementById('leaderboardContent').innerHTML = leaderboard.map((item, i) => `
+                <div class="lb-item" ${item.highlight ? 'style="background:rgba(0,243,255,0.1); border-radius:8px; padding:0.6rem;"' : ''}>
+                    <span class="lb-rank">#${i + 1}</span>
+                    <span class="lb-name">${item.name}</span>
+                    <span class="lb-score">${item.score} PTS</span>
+                </div>
+            `).join('');
+        }
+
+        window.addEventListener('load', loadState);
+    </script><script>
+    // --- EFECTO COMPLEMENTARIO: POLVO ESTELAR CYBERPUNK ---
+    const bgContainer = document.querySelector('.bg-animation') || document.body;
+    // Creamos un canvas dinámico de fondo si no existe uno interactivo
+    if(bgContainer) {
+        const bgCanvas = document.createElement('canvas');
+        bgCanvas.style.position = 'fixed';
+        bgCanvas.style.top = '0';
+        bgCanvas.style.left = '0';
+        bgCanvas.style.width = '100vw';
+        bgCanvas.style.height = '100vh';
+        bgCanvas.style.zIndex = '-1';
+        bgCanvas.style.pointerEvents = 'none';
+        bgContainer.appendChild(bgCanvas);
+
+        const bCtx = bgCanvas.getContext('2d');
+        let stars = [];
+
+        function resizeBg() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeBg);
+        resizeBg();
+
+        // Crear 60 estrellas de neón flotantes
+        for(let i=0; i<60; i++) {
+            stars.push({
+                x: Math.random() * bgCanvas.width,
+                y: Math.random() * bgCanvas.height,
+                size: Math.random() * 2 + 0.5,
+                color: Math.random() > 0.5 ? 'rgba(0, 243, 255, ' : 'rgba(176, 38, 255, ',
+                alpha: Math.random(),
+                speed: Math.random() * 0.02 + 0.005
+            });
+        }
+
+        function drawBgStars() {
+            bCtx.clearRect(0,0, bgCanvas.width, bgCanvas.height);
+            stars.forEach(s => {
+                s.alpha += s.speed;
+                if(s.alpha > 1 || s.alpha < 0) s.speed = -s.speed; // Parpadeo suave
+
+                bCtx.fillStyle = s.color + Math.abs(s.alpha) + ')';
+                bCtx.beginPath();
+                bCtx.arc(s.x, s.y, s.size, 0, Math.PI*2);
+                bCtx.fill();
+            });
+            requestAnimationFrame(drawBgStars);
+        }
+        drawBgStars();
+    }
+</script>
+</body>
+</html>
