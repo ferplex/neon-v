@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON VAULT | Juegos & Galería Cyberpunk</title>
+    <style>
+        :root {
+            --bg: #050508;
+            --surface: rgba(18, 18, 26, 0.7);
+            --primary: #00f3ff;
+            --secondary: #b026ff;
+            --text: #e6e6f0;
+            --muted: #8888a0;
+            --success: #00ff9d;
+            --gold: #ffd700;
+            --danger: #ff4444;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .bg-animation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: 
+                linear-gradient(rgba(5, 5, 8, 0.9), rgba(5, 5, 8, 0.95)),
+                repeating-linear-gradient(0deg, transparent 0, transparent 1px, rgba(0, 243, 255, 0.03) 1px, rgba(0, 243, 255, 0.03) 2px),
+                repeating-linear-gradient(90deg, transparent 0, transparent 1px, rgba(176, 38, 255, 0.03) 1px, rgba(176, 38, 255, 0.03) 2px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            animation: gridMove 20s linear infinite;
+        }
+        
+        .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.3; z-index: -1; }
+        .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation: float 8s ease-in-out infinite; }
+        .orb-2 { width: 300px; height: 300px; background: var(--secondary); bottom: -50px; right: -50px; animation: float 10s ease-in-out infinite reverse; }
+
+        @keyframes gridMove { 0% { background-position: 0 0, 0 0, 0 0; } 100% { background-position: 0 0, 0 40px, 40px 0; } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes glow { 0%, 100% { box-shadow: 0 0 10px rgba(0, 243, 255, 0.3); } 50% { box-shadow: 0 0 20px rgba(0, 243, 255, 0.8); } }
+
+        .glass { background: var(--surface); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+        a { color: var(--primary); text-decoration: none; transition: 0.3s; }
+        a:hover { color: var(--secondary); text-shadow: 0 0 8px var(--secondary); }
+
+        header { position: sticky; top: 0; z-index: 50; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(5, 5, 8, 0.95); backdrop-filter: blur(8px); }
+        nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; }
+        .logo { font-size: 1.8rem; font-weight: 900; letter-spacing: -1px; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        
+        .header-stats { display: flex; gap: 1.5rem; align-items: center; }
+        .stat-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.8rem; background: rgba(0, 243, 255, 0.1); border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 8px; font-weight: 600; font-size: 0.9rem; }
+        .stat-item.xp { border-color: rgba(255, 215, 0, 0.2); background: rgba(255, 215, 0, 0.1); }
+        .stat-item.level { border-color: rgba(176, 38, 255, 0.2); background: rgba(176, 38, 255, 0.1); color: var(--secondary); }
+
+        .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 0.9rem; }
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-primary:hover { box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); transform: translateY(-2px); }
+        .btn-secondary { background: var(--secondary); color: #fff; }
+        .btn-secondary:hover { box-shadow: 0 0 20px rgba(176, 38, 255, 0.4); }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: rgba(0, 243, 255, 0.1); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+
+        .hero { text-align: center; padding: 3rem 0 2rem; }
+        .hero h1 { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; margin-bottom: 0.5rem; line-height: 1.1; }
+        .hero p { color: var(--muted); max-width: 600px; margin: 0 auto 1.5rem; font-size: 1rem; }
+
+        /* ARCADE GRID */
+        .arcade-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin: 3rem 0; }
+        .game-card { padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); position: relative; transition: all 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, rgba(0,243,255,0.05), rgba(176,38,255,0.05)); }
+        .game-card:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 0 20px rgba(0, 243, 255, 0.2); }
+        .game-card.active { border-color: var(--secondary); box-shadow: 0 0 20px rgba(176, 38, 255, 0.3); }
+        
+        .game-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem; }
+        .game-icon { font-size: 2.5rem; }
+        .game-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.3rem; }
+        .game-genre { color: var(--primary); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .game-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem; flex-grow: 1; }
+        
+        .game-reward { display: flex; align-items: center; gap: 0.5rem; color: var(--success); font-weight: 700; margin-bottom: 1rem; }
+        .game-canvas { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 8px; margin: 1rem 0; display: none; }
+        .game-canvas.active { display: block; }
+        
+        .game-controls { display: flex; gap: 0.8rem; margin-top: 1rem; }
+        .game-controls button { flex: 1; }
+
+        .game-screen { position: relative; background: #000; border: 2px solid var(--primary); border-radius: 8px; overflow: hidden; margin-bottom: 1rem; }
+        .game-score { position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.7); padding: 0.4rem 0.8rem; border-radius: 4px; font-weight: 700; color: var(--success); z-index: 10; font-size: 0.9rem; }
+        .game-message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.9); padding: 1.5rem; border-radius: 8px; border: 2px solid var(--primary); text-align: center; z-index: 20; display: none; }
+        .game-message.show { display: block; }
+        .game-message h3 { color: var(--primary); margin-bottom: 0.5rem; font-size: 1.5rem; }
+        .game-message p { color: var(--text); margin-bottom: 0.5rem; }
+
+        /* TAP GAME */
+        .tap-zone { width: 100%; height: 280px; background: linear-gradient(135deg, rgba(0, 243, 255, 0.1), rgba(176, 38, 255, 0.1)); border: 2px dashed var(--primary); border-radius: 8px; position: relative; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .tap-zone.active { border-color: var(--success); box-shadow: 0 0 20px rgba(0, 255, 157, 0.5); }
+        .tap-bubble { position: absolute; width: 60px; height: 60px; background: radial-gradient(circle, var(--secondary), rgba(176, 38, 255, 0.3)); border: 2px solid var(--secondary); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 1.2rem; transition: transform 0.1s; }
+        .tap-bubble:active { transform: scale(0.8); }
+
+        /* MEMORY GAME */
+        .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1rem; }
+        .memory-card { aspect-ratio: 1; background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 2rem; transition: all 0.2s; user-select: none; }
+        .memory-card:hover:not(.matched):not(.flipped) { transform: scale(1.05); }
+        .memory-card.flipped { background: #000; color: var(--text); border: 2px solid var(--primary); }
+        .memory-card.matched { background: linear-gradient(135deg, var(--success), rgba(0, 255, 157, 0.5)); }
+
+        /* OBSTACLE GAME */
+        #obstacleCanvas { width: 100%; height: 300px; background: #000; display: block; }
+
+        /* SPACE GAME */
+        #spaceCanvas { width: 100%; height: 320px; background: #000; display: block; }
+
+        /* TRIVIA */
+        .trivia-question { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--primary); }
+        .trivia-options { display: grid; gap: 0.8rem; margin-bottom: 1.5rem; }
+        .trivia-btn { padding: 0.8rem 1rem; background: rgba(0, 243, 255, 0.1); border: 1px solid rgba(0, 243, 255, 0.3); color: var(--text); border-radius: 8px; cursor: pointer; transition: all 0.3s; text-align: left; }
+        .trivia-btn:hover { background: rgba(0, 243, 255, 0.2); border-color: var(--primary); }
+        .trivia-btn.selected { background: var(--secondary); border-color: var(--secondary); color: #fff; }
+        .trivia-btn.correct { background: var(--success); border-color: var(--success); color: #000; }
+        .trivia-btn.incorrect { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+        .section-title { margin: 3rem 0 1.5rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 1.8rem; font-weight: 800; }
+
+        footer { border-top: 1px solid rgba(255,255,255,0.1); padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 3rem; }
+
+        .leaderboard { margin-top: 1rem; }
+        .lb-item { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+        .lb-rank { color: var(--gold); font-weight: 700; width: 30px; }
+        .lb-score { color: var(--success); font-weight: 600; }
+
+        .sound-toggle { position: fixed; bottom: 2rem; right: 2rem; width: 55px; height: 55px; border-radius: 50%; background: var(--primary); border: 2px solid rgba(255,255,255,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; transition: all 0.3s; z-index: 100; box-shadow: 0 0 25px rgba(0, 243, 255, 0.5); }
+        .sound-toggle:hover { transform: scale(1.15); box-shadow: 0 0 40px rgba(0, 243, 255, 0.8); }
+        .sound-toggle.muted { background: rgba(136, 136, 160, 0.3); border-color: rgba(136, 136, 160, 0.5); box-shadow: 0 0 15px rgba(136, 136, 160, 0.3); }
+        .sound-toggle.muted:hover { box-shadow: 0 0 25px rgba(136, 136, 160, 0.5); }
+
+        @media (max-width: 768px) {
+            .arcade-grid { grid-template-columns: 1fr; }
+            .memory-grid { grid-template-columns: repeat(3, 1fr); }
+            .header-stats { flex-wrap: wrap; gap: 0.8rem; }
+            .stat-item { font-size: 0.8rem; padding: 0.4rem 0.6rem; }
+            .sound-toggle { width: 48px; height: 48px; font-size: 1.5rem; bottom: 1.5rem; right: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+
+    <header class="glass">
+        <nav class="container">
+            <div class="logo">◆ NEON VAULT ◆</div>
+            <div class="header-stats">
+                <div class="stat-item">💎 VC: <span id="vcCount">0</span></div>
+                <div class="stat-item xp">⚡ XP: <span id="xpCount">0</span></div>
+                <div class="stat-item level">🎯 Lv. <span id="levelCount">1</span></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h1>ARCADE NEON</h1>
+            <p>Juega, gana VC y domina la tabla de clasificación. Cada partida te acerca a nuevos niveles.</p>
+        </section>
+
+        <section class="arcade-grid" id="gameGrid">
+            <!-- JUEGO 1: TAP RUSH -->
+            <div class="game-card glass">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">TAP RUSH</div>
+                        <div class="game-genre">• Reflexos • Velocidad</div>
+                    </div>
+                    <div class="game-icon">👊</div>
+                </div>
+                <div class="game-desc">¡Clickea lo más rápido posible! Cuantos más toques en 10 segundos, más VC ganas.</div>
+                <div class="game-reward">💰 +10 VC por 5 taps</div>
+                
+                <div class="game-screen">
+                    <div class="game-score">Score: <span id="tapScore">0</span></div>
+                    <div class="tap-zone" id="tapZone">
+                        <span id="tapInstructions" style="color: var(--muted); font-size: 0.9rem;">TAP PARA COMENZAR</span>
+                    </div>
+                    <div class="game-message" id="tapMessage">
+                        <h3 id="tapResult"></h3>
+                        <p id="tapReward"></p>
+                    </div>
+                </div>
+
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="startTapGame()">Jugar</button>
+                    <button class="btn btn-outline btn-sm" id="tapRestart" onclick="resetTapGame()" style="display:none;">Reintentar</button>
+                </div>
+            </div>
+
+            <!-- JUEGO 2: MEMORY MATCH -->
+            <div class="game-card glass">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">MEMORY MATCH</div>
+                        <div class="game-genre">• Memoria • Concentración</div>
+                    </div>
+                    <div class="game-icon">🧠</div>
+                </div>
+                <div class="game-desc">Encuentra todos los pares de emojis. Menos movimientos = más VC.</div>
+                <div class="game-reward">💰 +30 VC si completas en menos de 25 movimientos</div>
+                
+                <div class="game-screen">
+                    <div class="game-score">Movimientos: <span id="memoryMoves">0</span></div>
+                    <div class="memory-grid" id="memoryGrid"></div>
+                    <div class="game-message" id="memoryMessage">
+                        <h3 id="memoryResult"></h3>
+                        <p id="memoryReward"></p>
+                    </div>
+                </div>
+
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="startMemoryGame()">Jugar</button>
+                    <button class="btn btn-outline btn-sm" id="memoryRestart" onclick="resetMemoryGame()" style="display:none;">Reintentar</button>
+                </div>
+            </div>
+
+            <!-- JUEGO 3: OBSTACLE RUNNER -->
+            <div class="game-card glass">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">NEON RUNNER</div>
+                        <div class="game-genre">• Acción • Reflejos</div>
+                    </div>
+                    <div class="game-icon">🎮</div>
+                </div>
+                <div class="game-desc">Esquiva obstáculos moviéndote con las flechas o WASD. Sobrevive lo máximo.</div>
+                <div class="game-reward">💰 +5 VC por cada segundo de supervivencia</div>
+                
+                <div class="game-screen">
+                    <div class="game-score">Tiempo: <span id="obstacleTime">0</span>s</div>
+                    <canvas id="obstacleCanvas" width="400" height="300"></canvas>
+                    <div class="game-message" id="obstacleMessage">
+                        <h3 id="obstacleResult"></h3>
+                        <p id="obstacleReward"></p>
+                    </div>
+                </div>
+
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="startObstacleGame()">Jugar</button>
+                    <button class="btn btn-outline btn-sm" id="obstacleRestart" onclick="resetObstacleGame()" style="display:none;">Reintentar</button>
+                </div>
+            </div>
+
+            <!-- JUEGO 4: SPACE SHOOTERS -->
+            <div class="game-card glass">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">SPACE SHOOTERS</div>
+                        <div class="game-genre">• Arcade • Action</div>
+                    </div>
+                    <div class="game-icon">🚀</div>
+                </div>
+                <div class="game-desc">Pilota tu nave y destruye enemigos. Esquiva sus disparos. Sobrevive lo máximo.</div>
+                <div class="game-reward">💰 +15 VC por enemigo destruido</div>
+                
+                <div class="game-screen">
+                    <div class="game-score">
+                        <span style="margin-right:2rem;">Enemigos: <span id="spaceKills">0</span></span>
+                        <span>Vidas: <span id="spaceHealth">3</span></span>
+                    </div>
+                    <canvas id="spaceCanvas" width="400" height="320"></canvas>
+                    <div class="game-message" id="spaceMessage">
+                        <h3 id="spaceResult"></h3>
+                        <p id="spaceReward"></p>
+                    </div>
+                </div>
+
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="startSpaceGame()">Jugar</button>
+                    <button class="btn btn-outline btn-sm" id="spaceRestart" onclick="resetSpaceGame()" style="display:none;">Reintentar</button>
+                </div>
+            </div>
+
+            <!-- JUEGO 5: TRIVIA GAMING -->
+            <div class="game-card glass">
+                <div class="game-header">
+                    <div>
+                        <div class="game-title">RETRO TRIVIA</div>
+                        <div class="game-genre">• Conocimiento • Gaming</div>
+                    </div>
+                    <div class="game-icon">🕹️</div>
+                </div>
+                <div class="game-desc">Responde preguntas sobre videojuegos clásicos. 3 preguntas por partida.</div>
+                <div class="game-reward">💰 +20 VC por respuesta correcta</div>
+                
+                <div class="game-screen">
+                    <div class="game-score">Correctas: <span id="triviaCorrect">0</span>/3</div>
+                    <div id="triviaContainer" style="display:none;">
+                        <div class="trivia-question" id="triviaQuestion"></div>
+                        <div class="trivia-options" id="triviaOptions"></div>
+                    </div>
+                    <div id="triviaStart" style="text-align:center; padding:2rem 0;">
+                        <p style="color:var(--muted); margin-bottom:1rem;">¿Listo para el desafío retro?</p>
+                    </div>
+                    <div class="game-message" id="triviaMessage">
+                        <h3 id="triviaResult"></h3>
+                        <p id="triviaReward"></p>
+                    </div>
+                </div>
+
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="startTriviaGame()">Jugar</button>
+                    <button class="btn btn-outline btn-sm" id="triviaRestart" onclick="resetTriviaGame()" style="display:none;">Otro Intento</button>
+                </div>
+            </div>
+        </section>
+
+        <section style="margin: 3rem 0;">
+            <h2 class="section-title">🏆 TABLA DE CLASIFICACIÓN</h2>
+            <div class="glass" style="padding: 1.5rem; border-radius: 16px;">
+                <div class="leaderboard">
+                    <div class="lb-item" style="font-weight:700; color:var(--primary); margin-bottom:0.5rem;">
+                        <span class="lb-rank">RANK</span>
+                        <span class="lb-name">JUGADOR</span>
+                        <span class="lb-score">PUNTOS</span>
+                    </div>
+                    <div id="leaderboardContent"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>NEON VAULT © 2025 | Arcade Zone | Diseñado con ◆ para jugadores retro</p>
+    </footer>
+
+    <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+
+    <script>
+        // ==================== AUDIO SYSTEM ====================
+        let audioContext;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(frequency, duration, type = 'sine', volume = 0.3, volumeEnv = true) {
+            if (!soundEnabled || !audioContext) return;
+
+            try {
+                const now = audioContext.currentTime;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc.type = type;
+                osc.frequency.value = frequency;
+
+                if (volumeEnv) {
+                    gain.gain.setValueAtTime(volume, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+                } else {
+                    gain.gain.setValueAtTime(volume, now);
+                }
+
+                osc.start(now);
+                osc.stop(now + duration);
+            } catch (e) {
+                console.log('Audio error:', e);
+            }
+        }
+
+        function playSequence(sequence) {
+            if (!soundEnabled) return;
+            initAudio();
+            let delay = 0;
+            sequence.forEach(({ freq, duration, type = 'sine', volume = 0.3 }) => {
+                setTimeout(() => playSound(freq, duration, type, volume), delay);
+                delay += duration * 1000 + 50;
+            });
+        }
+
+        const sounds = {
+            shoot: () => { initAudio(); playSound(800, 0.05, 'square', 0.15); },
+            tap: () => { initAudio(); playSound(1200, 0.03, 'sine', 0.15); },
+            click: () => { initAudio(); playSound(600, 0.05, 'square', 0.1); },
+            hit: () => { initAudio(); playSequence([{ freq: 200, duration: 0.08, type: 'triangle', volume: 0.25 }]); },
+            explode: () => { initAudio(); playSequence([{ freq: 150, duration: 0.1, type: 'sine', volume: 0.4 }, { freq: 100, duration: 0.15, type: 'sine', volume: 0.3 }]); },
+            levelUp: () => { initAudio(); playSequence([{ freq: 523, duration: 0.1 }, { freq: 659, duration: 0.1 }, { freq: 784, duration: 0.2 }]); },
+            success: () => { initAudio(); playSequence([{ freq: 500, duration: 0.1 }, { freq: 600, duration: 0.15 }]); },
+            gameOver: () => { initAudio(); playSequence([{ freq: 400, duration: 0.15 }, { freq: 300, duration: 0.15 }, { freq: 200, duration: 0.3 }]); },
+            coin: () => { initAudio(); playSequence([{ freq: 800, duration: 0.08, volume: 0.2 }, { freq: 1000, duration: 0.1, volume: 0.25 }]); },
+            enemyShoot: () => { initAudio(); playSound(300, 0.04, 'square', 0.1); }
+        };
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            if (soundEnabled) {
+                btn.textContent = '🔊';
+                btn.classList.remove('muted');
+                sounds.success();
+            } else {
+                btn.textContent = '🔇';
+                btn.classList.add('muted');
+            }
+            localStorage.setItem('soundEnabled', soundEnabled);
+        }
+
+        // ==================== STATE ====================
+        let userState = {
+            vc: 500,
+            xp: 0,
+            level: 1,
+            totalPoints: 0,
+            games: {}
+        };
+
+        function loadState() {
+            const saved = localStorage.getItem('neonVaultState');
+            if (saved) userState = JSON.parse(saved);
+            const soundSaved = localStorage.getItem('soundEnabled');
+            if (soundSaved === 'false') {
+                soundEnabled = false;
+                document.getElementById('soundToggle').textContent = '🔇';
+                document.getElementById('soundToggle').classList.add('muted');
+            }
+            updateStats();
+            updateLeaderboard();
+        }
+
+        function saveState() {
+            localStorage.setItem('neonVaultState', JSON.stringify(userState));
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('vcCount').textContent = userState.vc;
+            document.getElementById('xpCount').textContent = userState.xp;
+            document.getElementById('levelCount').textContent = userState.level;
+        }
+
+        function addReward(vc, xp = 0) {
+            userState.vc += vc;
+            userState.xp += xp || Math.floor(vc / 5);
+            userState.totalPoints += vc;
+
+            sounds.coin();
+
+            if (userState.xp >= userState.level * 100) {
+                userState.level++;
+                userState.xp = 0;
+                sounds.levelUp();
+                alert(`🎉 ¡SUBISTE AL NIVEL ${userState.level}!`);
+            }
+            saveState();
+        }
+
+        // ==================== TAP GAME ====================
+        let tapGameState = { running: false, taps: 0, timeLeft: 10 };
+
+        function startTapGame() {
+            tapGameState = { running: true, taps: 0, timeLeft: 10 };
+            document.getElementById('tapZone').classList.add('active');
+            document.getElementById('tapInstructions').textContent = `10s - ¡CLICKEA!`;
+            document.getElementById('tapZone').onclick = () => {
+                if (tapGameState.running) {
+                    tapGameState.taps++;
+                    document.getElementById('tapScore').textContent = tapGameState.taps;
+                    sounds.tap();
+                }
+            };
+
+            const timer = setInterval(() => {
+                tapGameState.timeLeft--;
+                document.getElementById('tapInstructions').textContent = `${tapGameState.timeLeft}s`;
+                if (tapGameState.timeLeft <= 0) {
+                    clearInterval(timer);
+                    endTapGame();
+                }
+            }, 1000);
+        }
+
+        function endTapGame() {
+            tapGameState.running = false;
+            const reward = Math.floor(tapGameState.taps / 5) * 10;
+            document.getElementById('tapResult').textContent = `🎉 ${tapGameState.taps} TAPS!`;
+            document.getElementById('tapReward').textContent = `+${reward} VC`;
+            document.getElementById('tapMessage').classList.add('show');
+            document.getElementById('tapZone').classList.remove('active');
+            document.getElementById('tapZone').onclick = null;
+            document.getElementById('tapRestart').style.display = 'inline-block';
+            sounds.success();
+            addReward(reward);
+        }
+
+        function resetTapGame() {
+            document.getElementById('tapZone').classList.remove('active');
+            document.getElementById('tapScore').textContent = '0';
+            document.getElementById('tapMessage').classList.remove('show');
+            document.getElementById('tapRestart').style.display = 'none';
+        }
+
+        // ==================== MEMORY GAME ====================
+        const emojis = ['🎮', '🕹️', '👾', '🎯', '⚡', '💎', '🏆', '🌟'];
+        let memoryGameState = { cards: [], flipped: [], matched: 0, moves: 0 };
+
+        function initMemoryGrid() {
+            const shuffled = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+            memoryGameState.cards = shuffled.map((emoji, i) => ({ id: i, emoji, flipped: false, matched: false }));
+            renderMemoryGrid();
+        }
+
+        function renderMemoryGrid() {
+            const grid = document.getElementById('memoryGrid');
+            grid.innerHTML = memoryGameState.cards.map(card => {
+                let classes = 'memory-card';
+                if (card.flipped) classes += ' flipped';
+                if (card.matched) classes += ' matched';
+                return `<button class="${classes}" onclick="flipMemoryCard(${card.id})">${card.matched ? card.emoji : '?'}</button>`;
+            }).join('');
+        }
+
+        function flipMemoryCard(id) {
+            const card = memoryGameState.cards[id];
+            if (card.flipped || card.matched || memoryGameState.flipped.length === 2) return;
+
+            card.flipped = true;
+            memoryGameState.flipped.push(id);
+            renderMemoryGrid();
+            sounds.click();
+
+            if (memoryGameState.flipped.length === 2) {
+                memoryGameState.moves++;
+                document.getElementById('memoryMoves').textContent = memoryGameState.moves;
+                const [id1, id2] = memoryGameState.flipped;
+                if (memoryGameState.cards[id1].emoji === memoryGameState.cards[id2].emoji) {
+                    sounds.success();
+                    memoryGameState.cards[id1].matched = true;
+                    memoryGameState.cards[id2].matched = true;
+                    memoryGameState.matched++;
+                    memoryGameState.flipped = [];
+                    renderMemoryGrid();
+                    if (memoryGameState.matched === emojis.length) endMemoryGame();
+                } else {
+                    setTimeout(() => {
+                        memoryGameState.cards[id1].flipped = false;
+                        memoryGameState.cards[id2].flipped = false;
+                        memoryGameState.flipped = [];
+                        renderMemoryGrid();
+                    }, 800);
+                }
+            }
+        }
+
+        function startMemoryGame() {
+            memoryGameState = { cards: [], flipped: [], matched: 0, moves: 0 };
+            initMemoryGrid();
+            document.getElementById('memoryMoves').textContent = '0';
+            document.getElementById('memoryMessage').classList.remove('show');
+            document.getElementById('memoryRestart').style.display = 'none';
+        }
+
+        function endMemoryGame() {
+            const reward = memoryGameState.moves < 25 ? 30 : Math.max(10, 30 - memoryGameState.moves);
+            document.getElementById('memoryResult').textContent = `✅ ¡GANASTE!`;
+            document.getElementById('memoryReward').textContent = `${memoryGameState.moves} movimientos\n+${reward} VC`;
+            document.getElementById('memoryMessage').classList.add('show');
+            document.getElementById('memoryRestart').style.display = 'inline-block';
+            sounds.levelUp();
+            addReward(reward);
+        }
+
+        function resetMemoryGame() {
+            document.getElementById('memoryMessage').classList.remove('show');
+            document.getElementById('memoryRestart').style.display = 'none';
+        }
+
+        // ==================== OBSTACLE GAME ====================
+        const obstacleCanvas = document.getElementById('obstacleCanvas');
+        const ctx = obstacleCanvas.getContext('2d');
+        let obstacleGameState = {
+            running: false,
+            playerX: 175,
+            playerY: 250,
+            playerWidth: 30,
+            playerHeight: 30,
+            obstacles: [],
+            score: 0,
+            startTime: 0
+        };
+        const keys = {};
+
+        window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+        window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+        function startObstacleGame() {
+            obstacleGameState = {
+                running: true,
+                playerX: 175,
+                playerY: 250,
+                playerWidth: 30,
+                playerHeight: 30,
+                obstacles: [],
+                score: 0,
+                startTime: Date.now()
+            };
+            document.getElementById('obstacleTime').textContent = '0';
+            document.getElementById('obstacleMessage').classList.remove('show');
+            document.getElementById('obstacleRestart').style.display = 'none';
+            gameLoopObstacle();
+        }
+
+        function gameLoopObstacle() {
+            if (!obstacleGameState.running) return;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, obstacleCanvas.width, obstacleCanvas.height);
+
+            if (keys['arrowleft'] || keys['a']) obstacleGameState.playerX -= 6;
+            if (keys['arrowright'] || keys['d']) obstacleGameState.playerX += 6;
+            obstacleGameState.playerX = Math.max(0, Math.min(obstacleCanvas.width - obstacleGameState.playerWidth, obstacleGameState.playerX));
+
+            ctx.fillStyle = '#00f3ff';
+            ctx.fillRect(obstacleGameState.playerX, obstacleGameState.playerY, obstacleGameState.playerWidth, obstacleGameState.playerHeight);
+            ctx.strokeStyle = '#b026ff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(obstacleGameState.playerX, obstacleGameState.playerY, obstacleGameState.playerWidth, obstacleGameState.playerHeight);
+
+            if (Math.random() < 0.02) {
+                obstacleGameState.obstacles.push({
+                    x: Math.random() * (obstacleCanvas.width - 40),
+                    y: -20,
+                    width: 40,
+                    height: 20,
+                    speed: 3 + Math.random() * 2
+                });
+            }
+
+            obstacleGameState.obstacles.forEach((obs, i) => {
+                obs.y += obs.speed;
+                ctx.fillStyle = '#ff4444';
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+                if (obs.x < obstacleGameState.playerX + obstacleGameState.playerWidth &&
+                    obs.x + obs.width > obstacleGameState.playerX &&
+                    obs.y < obstacleGameState.playerY + obstacleGameState.playerHeight &&
+                    obs.y + obs.height > obstacleGameState.playerY) {
+                    endObstacleGame();
+                    return;
+                }
+
+                if (obs.y > obstacleCanvas.height) {
+                    obstacleGameState.obstacles.splice(i, 1);
+                    obstacleGameState.score++;
+                }
+            });
+
+            const time = Math.floor((Date.now() - obstacleGameState.startTime) / 1000);
+            document.getElementById('obstacleTime').textContent = time;
+
+            requestAnimationFrame(gameLoopObstacle);
+        }
+
+        function endObstacleGame() {
+            obstacleGameState.running = false;
+            const time = Math.floor((Date.now() - obstacleGameState.startTime) / 1000);
+            const reward = Math.max(5, time * 5);
+            document.getElementById('obstacleResult').textContent = `💥 ¡GAME OVER!`;
+            document.getElementById('obstacleReward').textContent = `Sobreviviste ${time}s\n+${reward} VC`;
+            document.getElementById('obstacleMessage').classList.add('show');
+            document.getElementById('obstacleRestart').style.display = 'inline-block';
+            sounds.gameOver();
+            addReward(reward);
+        }
+
+        function resetObstacleGame() {
+            document.getElementById('obstacleMessage').classList.remove('show');
+            document.getElementById('obstacleRestart').style.display = 'none';
+        }
+
+        // ==================== SPACE GAME ====================
+        const spaceCanvas = document.getElementById('spaceCanvas');
+        const spaceCtx = spaceCanvas.getContext('2d');
+        
+        let spaceGameState = {
+            running: false,
+            playerX: spaceCanvas.width / 2,
+            playerY: spaceCanvas.height - 40,
+            playerWidth: 25,
+            playerHeight: 30,
+            health: 3,
+            kills: 0,
+            bullets: [],
+            enemies: [],
+            enemyBullets: [],
+            score: 0,
+            wave: 1,
+            invulnerable: false,
+            shootCooldown: 0
+        };
+
+        const spaceKeys = {};
+        window.addEventListener('keydown', e => {
+            spaceKeys[e.key.toLowerCase()] = true;
+            if (e.key === ' ' && spaceGameState.running && spaceGameState.shootCooldown <= 0) {
+                spaceGameState.bullets.push({
+                    x: spaceGameState.playerX + spaceGameState.playerWidth / 2,
+                    y: spaceGameState.playerY,
+                    width: 4,
+                    height: 12,
+                    speed: 7
+                });
+                spaceGameState.shootCooldown = 5;
+                sounds.shoot();
+                e.preventDefault();
+            }
+        });
+        window.addEventListener('keyup', e => spaceKeys[e.key.toLowerCase()] = false);
+
+        function startSpaceGame() {
+            spaceGameState = {
+                running: true,
+                playerX: spaceCanvas.width / 2,
+                playerY: spaceCanvas.height - 40,
+                playerWidth: 25,
+                playerHeight: 30,
+                health: 3,
+                kills: 0,
+                bullets: [],
+                enemies: [],
+                enemyBullets: [],
+                score: 0,
+                wave: 1,
+                invulnerable: false,
+                shootCooldown: 0
+            };
+            
+            document.getElementById('spaceHealth').textContent = '3';
+            document.getElementById('spaceKills').textContent = '0';
+            document.getElementById('spaceMessage').classList.remove('show');
+            document.getElementById('spaceRestart').style.display = 'none';
+            
+            for (let i = 0; i < 5; i++) {
+                spaceGameState.enemies.push({
+                    x: Math.random() * (spaceCanvas.width - 30),
+                    y: -50 - i * 60,
+                    width: 30,
+                    height: 25,
+                    speed: 2 + Math.random() * 1,
+                    shootTimer: 0
+                });
+            }
+            
+            gameLoopSpace();
+        }
+
+        function gameLoopSpace() {
+            if (!spaceGameState.running) return;
+
+            spaceCtx.fillStyle = '#000';
+            spaceCtx.fillRect(0, 0, spaceCanvas.width, spaceCanvas.height);
+
+            spaceCtx.strokeStyle = 'rgba(0, 243, 255, 0.05)';
+            spaceCtx.lineWidth = 0.5;
+            for (let i = 0; i < spaceCanvas.width; i += 30) {
+                spaceCtx.beginPath();
+                spaceCtx.moveTo(i, 0);
+                spaceCtx.lineTo(i, spaceCanvas.height);
+                spaceCtx.stroke();
+            }
+
+            if (spaceKeys['arrowleft'] || spaceKeys['a']) spaceGameState.playerX -= 5;
+            if (spaceKeys['arrowright'] || spaceKeys['d']) spaceGameState.playerX += 5;
+            spaceGameState.playerX = Math.max(0, Math.min(spaceCanvas.width - spaceGameState.playerWidth, spaceGameState.playerX));
+
+            spaceCtx.fillStyle = '#00f3ff';
+            spaceCtx.beginPath();
+            spaceCtx.moveTo(spaceGameState.playerX + spaceGameState.playerWidth / 2, spaceGameState.playerY);
+            spaceCtx.lineTo(spaceGameState.playerX, spaceGameState.playerY + spaceGameState.playerHeight);
+            spaceCtx.lineTo(spaceGameState.playerX + spaceGameState.playerWidth, spaceGameState.playerY + spaceGameState.playerHeight);
+            spaceCtx.fill();
+
+            if (spaceGameState.invulnerable && Math.random() > 0.3) {
+                spaceCtx.strokeStyle = '#b026ff';
+                spaceCtx.lineWidth = 2;
+                spaceCtx.beginPath();
+                spaceCtx.arc(spaceGameState.playerX + spaceGameState.playerWidth / 2, spaceGameState.playerY + spaceGameState.playerHeight / 2, 20, 0, Math.PI * 2);
+                spaceCtx.stroke();
+            }
+
+            spaceGameState.shootCooldown--;
+
+            spaceGameState.bullets.forEach((bullet, i) => {
+                bullet.y -= bullet.speed;
+                spaceCtx.fillStyle = '#00ff9d';
+                spaceCtx.fillRect(bullet.x - bullet.width / 2, bullet.y, bullet.width, bullet.height);
+
+                if (bullet.y < 0) spaceGameState.bullets.splice(i, 1);
+            });
+
+            spaceGameState.enemies.forEach((enemy, i) => {
+                enemy.y += enemy.speed;
+                enemy.shootTimer++;
+
+                spaceCtx.fillStyle = '#b026ff';
+                spaceCtx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                spaceCtx.fillStyle = '#ff0080';
+                spaceCtx.fillRect(enemy.x + 5, enemy.y + 5, 8, 8);
+                spaceCtx.fillRect(enemy.x + 17, enemy.y + 5, 8, 8);
+
+                if (enemy.shootTimer > 80 && Math.random() > 0.7) {
+                    spaceGameState.enemyBullets.push({
+                        x: enemy.x + enemy.width / 2,
+                        y: enemy.y + enemy.height,
+                        width: 3,
+                        height: 10,
+                        speed: 4
+                    });
+                    sounds.enemyShoot();
+                    enemy.shootTimer = 0;
+                }
+
+                spaceGameState.bullets.forEach((bullet, j) => {
+                    if (bullet.x > enemy.x && bullet.x < enemy.x + enemy.width &&
+                        bullet.y > enemy.y && bullet.y < enemy.y + enemy.height) {
+                        spaceGameState.enemies.splice(i, 1);
+                        spaceGameState.bullets.splice(j, 1);
+                        spaceGameState.kills++;
+                        spaceGameState.score += 150;
+                        document.getElementById('spaceKills').textContent = spaceGameState.kills;
+                        sounds.explode();
+
+                        if (spaceGameState.kills % 5 === 0) {
+                            spaceGameState.wave++;
+                            for (let k = 0; k < spaceGameState.wave + 2; k++) {
+                                spaceGameState.enemies.push({
+                                    x: Math.random() * (spaceCanvas.width - 30),
+                                    y: -50 - Math.random() * 100,
+                                    width: 30,
+                                    height: 25,
+                                    speed: 2 + Math.random() * 1.5,
+                                    shootTimer: 0
+                                });
+                            }
+                        }
+                    }
+                });
+
+                if (enemy.y > spaceCanvas.height) {
+                    spaceGameState.enemies.splice(i, 1);
+                    spaceGameState.health--;
+                    document.getElementById('spaceHealth').textContent = spaceGameState.health;
+                    sounds.hit();
+                    if (spaceGameState.health <= 0) {
+                        endSpaceGame();
+                        return;
+                    }
+                }
+            });
+
+            spaceGameState.enemyBullets.forEach((bullet, i) => {
+                bullet.y += bullet.speed;
+                spaceCtx.fillStyle = '#ff4444';
+                spaceCtx.fillRect(bullet.x - bullet.width / 2, bullet.y, bullet.width, bullet.height);
+
+                if (!spaceGameState.invulnerable &&
+                    bullet.x > spaceGameState.playerX && bullet.x < spaceGameState.playerX + spaceGameState.playerWidth &&
+                    bullet.y > spaceGameState.playerY && bullet.y < spaceGameState.playerY + spaceGameState.playerHeight) {
+                    spaceGameState.enemyBullets.splice(i, 1);
+                    spaceGameState.health--;
+                    document.getElementById('spaceHealth').textContent = spaceGameState.health;
+                    sounds.hit();
+                    spaceGameState.invulnerable = true;
+                    setTimeout(() => spaceGameState.invulnerable = false, 1500);
+                    if (spaceGameState.health <= 0) {
+                        endSpaceGame();
+                        return;
+                    }
+                }
+
+                if (bullet.y > spaceCanvas.height) spaceGameState.enemyBullets.splice(i, 1);
+            });
+
+            spaceCtx.fillStyle = 'rgba(0, 243, 255, 0.5)';
+            spaceCtx.font = 'bold 14px Arial';
+            spaceCtx.fillText(`ONDA ${spaceGameState.wave}`, 10, 25);
+
+            requestAnimationFrame(gameLoopSpace);
+        }
+
+        function endSpaceGame() {
+            spaceGameState.running = false;
+            const reward = Math.max(15, spaceGameState.kills * 15);
+            document.getElementById('spaceResult').textContent = `💥 ¡GAME OVER!`;
+            document.getElementById('spaceReward').textContent = `${spaceGameState.kills} enemigos destruidos\nOnda ${spaceGameState.wave}\n+${reward} VC`;
+            document.getElementById('spaceMessage').classList.add('show');
+            document.getElementById('spaceRestart').style.display = 'inline-block';
+            sounds.gameOver();
+            addReward(reward);
+        }
+
+        function resetSpaceGame() {
+            document.getElementById('spaceMessage').classList.remove('show');
+            document.getElementById('spaceRestart').style.display = 'none';
+        }
+
+        // ==================== TRIVIA ====================
+        const triviaQuestions = [
+            { q: '¿Cuál fue el primer videojuego lanzado por Nintendo?', options: ['Donkey Kong', 'Mario Bros', 'Game & Watch', 'The Legend of Zelda'], correct: 0 },
+            { q: '¿En qué año se lanzó el Pac-Man original?', options: ['1979', '1980', '1981', '1982'], correct: 1 },
+            { q: '¿Cuál es el nombre del fontanero de Nintendo?', options: ['Luigi', 'Mario', 'Toad', 'Wario'], correct: 1 },
+            { q: '¿Cuál fue la consola más vendida de todos los tiempos?', options: ['PlayStation 2', 'Nintendo DS', 'PlayStation 4', 'Game Boy'], correct: 0 },
+            { q: '¿En qué año se lanzó el primer Zelda?', options: ['1985', '1986', '1987', '1988'], correct: 0 },
+            { q: '¿Quién es el villano principal de Donkey Kong Country?', options: ['Kremling Krew', 'King K. Rool', 'Diddy Kong', 'Funky Kong'], correct: 1 },
+            { q: '¿En qué consola salió el primer Sonic?', options: ['Nintendo 64', 'Sega Genesis', 'SNES', 'Atari'], correct: 1 }
+        ];
+
+        let triviaGameState = { questions: [], current: 0, correct: 0, answered: false };
+
+        function startTriviaGame() {
+            triviaGameState = {
+                questions: triviaQuestions.sort(() => Math.random() - 0.5).slice(0, 3),
+                current: 0,
+                correct: 0,
+                answered: false
+            };
+            document.getElementById('triviaStart').style.display = 'none';
+            document.getElementById('triviaContainer').style.display = 'block';
+            document.getElementById('triviaMessage').classList.remove('show');
+            document.getElementById('triviaRestart').style.display = 'none';
+            showTriviaQuestion();
+        }
+
+        function showTriviaQuestion() {
+            const q = triviaGameState.questions[triviaGameState.current];
+            document.getElementById('triviaQuestion').textContent = q.q;
+            document.getElementById('triviaOptions').innerHTML = q.options.map((opt, i) => 
+                `<button class="trivia-btn" onclick="answerTrivia(${i})">${opt}</button>`
+            ).join('');
+            document.getElementById('triviaCorrect').textContent = triviaGameState.correct;
+        }
+
+        function answerTrivia(selected) {
+            if (triviaGameState.answered) return;
+            triviaGameState.answered = true;
+            const q = triviaGameState.questions[triviaGameState.current];
+            const buttons = document.querySelectorAll('.trivia-btn');
+
+            buttons.forEach((btn, i) => {
+                if (i === q.correct) {
+                    btn.classList.add('correct');
+                } else if (i === selected && selected !== q.correct) {
+                    btn.classList.add('incorrect');
+                }
+                btn.disabled = true;
+            });
+
+            if (selected === q.correct) {
+                triviaGameState.correct++;
+                sounds.success();
+            } else {
+                sounds.hit();
+            }
+
+            setTimeout(() => {
+                triviaGameState.current++;
+                if (triviaGameState.current < 3) {
+                    triviaGameState.answered = false;
+                    showTriviaQuestion();
+                } else {
+                    endTriviaGame();
+                }
+            }, 1500);
+        }
+
+        function endTriviaGame() {
+            document.getElementById('triviaContainer').style.display = 'none';
+            const reward = triviaGameState.correct * 20;
+            document.getElementById('triviaResult').textContent = `${triviaGameState.correct}/3 correctas`;
+            document.getElementById('triviaReward').textContent = `+${reward} VC`;
+            document.getElementById('triviaMessage').classList.add('show');
+            document.getElementById('triviaRestart').style.display = 'inline-block';
+            if (triviaGameState.correct === 3) {
+                sounds.levelUp();
+            } else if (triviaGameState.correct === 0) {
+                sounds.gameOver();
+            } else {
+                sounds.success();
+            }
+            addReward(reward);
+        }
+
+        function resetTriviaGame() {
+            document.getElementById('triviaStart').style.display = 'block';
+            document.getElementById('triviaMessage').classList.remove('show');
+            document.getElementById('triviaRestart').style.display = 'none';
+        }
+
+        // ==================== LEADERBOARD ====================
+        function updateLeaderboard() {
+            const leaderboard = [
+                { name: 'NEON_PHANTOM', score: userState.totalPoints + Math.floor(Math.random() * 500) },
+                { name: 'CYBER_NOVA', score: Math.max(userState.totalPoints, 450) },
+                { name: 'TÚ (PLAYER)', score: userState.totalPoints, highlight: true },
+                { name: 'RETRO_KING', score: Math.max(userState.totalPoints - 100, 250) },
+                { name: 'PIXEL_LORD', score: Math.max(userState.totalPoints - 200, 150) }
+            ].sort((a, b) => b.score - a.score);
+
+            const html = leaderboard.map((item, i) => `
+                <div class="lb-item" ${item.highlight ? 'style="background:rgba(0,243,255,0.1); border-radius:8px; padding:0.6rem;"' : ''}>
+                    <span class="lb-rank">#${i + 1}</span>
+                    <span class="lb-name">${item.name}</span>
+                    <span class="lb-score">${item.score} PTS</span>
+                </div>
+            `).join('');
+
+            document.getElementById('leaderboardContent').innerHTML = html;
+        }
+
+        // ==================== INIT ====================
+        window.addEventListener('load', loadState);
+    </script>
+</body>
+</html>
